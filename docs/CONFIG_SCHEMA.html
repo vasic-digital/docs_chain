@@ -237,13 +237,13 @@
   </style>
 </head>
 <body>
-<h1 id="docs_chain--configuration-schema-reference">docs_chain —
+<h1 id="docs-chain-configuration-schema-reference">Docs Chain —
 Configuration Schema Reference</h1>
-<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
-2026-05-29T00:00:00Z <strong>Status:</strong> Design documentation — the
+<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
+2026-05-29T12:00:00Z <strong>Status:</strong> Design documentation — the
 schema is PLANNED (Phase 4 — config loader + validation). Describes the
 DESIGNED YAML contract. <strong>Authority:</strong> Operator mandate
-2026-05-29 (docs_chain initiative) <strong>Design provenance:</strong>
+2026-05-29 (Docs Chain initiative) <strong>Design provenance:</strong>
 authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
 project research tree (<code>docs/research/docs_chain/</code>); this
 document is the self-contained specification.</p>
@@ -254,8 +254,7 @@ land in Phase 4 (<code>internal/config</code>). This document is the
 formal contract a consuming project writes against; it is not a claim
 that the loader parses it today.</p>
 <hr />
-<h2 id="1-file-location-and-discovery">1. File location and
-discovery</h2>
+<h2 id="file-location-and-discovery">1. File location and discovery</h2>
 <ul>
 <li>One YAML file per context under
 <code>.docs_chain/contexts/&lt;name&gt;.yaml</code> at the project
@@ -268,7 +267,7 @@ value.</li>
 every file in the directory.</li>
 </ul>
 <hr />
-<h2 id="2-top-level-document-schema">2. Top-level document schema</h2>
+<h2 id="top-level-document-schema">2. Top-level document schema</h2>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span><span class="at"> &lt;string&gt;</span><span class="co">          # REQUIRED — unique context name</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> &lt;string&gt;</span><span class="co">      # OPTIONAL — human-readable purpose</span></span>
@@ -276,6 +275,13 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">edges</span><span class="kw">:</span><span class="at"> &lt;list&gt;</span><span class="co">              # REQUIRED — list of edge-spec</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">transforms</span><span class="kw">:</span><span class="at"> &lt;map&gt;</span><span class="co">          # REQUIRED if any edge names a transform</span></span></code></pre></div>
 <table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 27%" />
+</colgroup>
 <thead>
 <tr>
 <th>Field</th>
@@ -325,10 +331,17 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="
 </tbody>
 </table>
 <hr />
-<h2 id="3-node-spec">3. Node spec</h2>
+<h2 id="node-spec">3. Node spec</h2>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;node_id&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> &lt;node-kind&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">path</span><span class="kw">:</span><span class="at"> &lt;relative-path&gt; </span><span class="kw">}</span></span></code></pre></div>
 <table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 27%" />
+</colgroup>
 <thead>
 <tr>
 <th>Field</th>
@@ -366,14 +379,18 @@ the roster/corpus members (§11.4.86)</td>
 <td>list<string></td>
 <td>no</td>
 <td><code>[]</code></td>
-<td>for <code>kind: fingerprint</code>: member globs to exclude (e.g.
-gitignored <code>downloaded/</code>)</td>
+<td>for <code>kind: fingerprint</code>: member globs to exclude
+(e.g. gitignored <code>downloaded/</code>)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="31-allowed-kind-values">3.1 Allowed <code>kind</code>
-values</h3>
+<h3 id="allowed-kind-values">3.1 Allowed <code>kind</code> values</h3>
 <table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 25%" />
+<col style="width: 45%" />
+</colgroup>
 <thead>
 <tr>
 <th>Value</th>
@@ -425,13 +442,19 @@ values</h3>
 </tbody>
 </table>
 <hr />
-<h2 id="4-edge-spec">4. Edge spec</h2>
+<h2 id="edge-spec">4. Edge spec</h2>
 <p>Two edge shapes. The <code>type</code> field selects which.</p>
-<h3 id="41-derive-from-one-way">4.1 <code>derive-from</code>
-(one-way)</h3>
+<h3 id="derive-from-one-way">4.1 <code>derive-from</code> (one-way)</h3>
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">to</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> &lt;transform_name&gt; </span><span class="kw">}</span></span></code></pre></div>
 <table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 27%" />
+</colgroup>
 <thead>
 <tr>
 <th>Field</th>
@@ -473,12 +496,18 @@ transform)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="42-sync-bidirectional">4.2 <code>sync</code>
-(bidirectional)</h3>
+<h3 id="sync-bidirectional">4.2 <code>sync</code> (bidirectional)</h3>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> sync</span><span class="kw">,</span><span class="at"> </span><span class="fu">a</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">b</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">authority</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">transform_a_to_b</span><span class="kw">:</span><span class="at"> &lt;transform_name&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform_b_to_a</span><span class="kw">:</span><span class="at"> &lt;transform_name&gt; </span><span class="kw">}</span></span></code></pre></div>
 <table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 27%" />
+</colgroup>
 <thead>
 <tr>
 <th>Field</th>
@@ -536,17 +565,24 @@ truth (ARCHITECTURE §5)</td>
 </tbody>
 </table>
 <p>When the two transforms are omitted and the
-<code>(kind_a, kind_b)</code> pair maps to a known builtin pair (e.g.
-<code>markdown</code> ↔︎ <code>sqlite</code>), docs_chain selects the
-builtin pair automatically; otherwise both MUST be specified.</p>
+<code>(kind_a, kind_b)</code> pair maps to a known builtin pair
+(e.g. <code>markdown</code> ↔︎ <code>sqlite</code>), Docs Chain selects
+the builtin pair automatically; otherwise both MUST be specified.</p>
 <hr />
-<h2 id="5-transform-spec">5. Transform spec</h2>
+<h2 id="transform-spec">5. Transform spec</h2>
 <p>A transform is either a builtin or an external command.</p>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;transform_name&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> &lt;builtin-name&gt; </span><span class="kw">}</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># OR</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;transform_name&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> &lt;command&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">&lt;arg&gt;</span><span class="kw">,</span><span class="at"> ...</span><span class="kw">]</span><span class="at"> </span><span class="kw">}</span></span></code></pre></div>
 <table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 27%" />
+</colgroup>
 <thead>
 <tr>
 <th>Field</th>
@@ -578,15 +614,20 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="
 <td>no</td>
 <td><code>[]</code></td>
 <td>only with <code>exec</code>; appended after the input/output paths
-docs_chain passes</td>
+Docs Chain passes</td>
 </tr>
 </tbody>
 </table>
 <p>Exactly one of <code>builtin</code> / <code>exec</code> MUST be
 present.</p>
-<h3 id="51-allowed-builtin-values">5.1 Allowed <code>builtin</code>
+<h3 id="allowed-builtin-values">5.1 Allowed <code>builtin</code>
 values</h3>
-<table>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+</colgroup>
 <thead>
 <tr>
 <th>Builtin</th>
@@ -632,14 +673,14 @@ values</h3>
 </tr>
 </tbody>
 </table>
-<h3 id="52-exec-transform-contract">5.2 <code>exec:</code> transform
+<h3 id="exec-transform-contract">5.2 <code>exec:</code> transform
 contract</h3>
 <p>An <code>exec:</code> transform is invoked with input path(s) and the
-staged output temp path supplied by docs_chain. It MUST:</p>
+staged output temp path supplied by Docs Chain. It MUST:</p>
 <ul>
 <li>read ONLY from the declared input node paths;</li>
-<li>write its result to the staged temp path docs_chain provides (never
-directly to the live artefact — docs_chain owns the atomic rename,
+<li>write its result to the staged temp path Docs Chain provides (never
+directly to the live artefact — Docs Chain owns the atomic rename,
 §8);</li>
 <li>exit 0 on success, non-zero on failure (triggers rollback, exit
 3);</li>
@@ -648,7 +689,7 @@ directly to the live artefact — docs_chain owns the atomic rename,
 the Phase 2 meta-test).</li>
 </ul>
 <hr />
-<h2 id="6-annotated-example--derive-from-chain">6. Annotated example —
+<h2 id="annotated-example-derive-from-chain">6. Annotated example —
 <code>derive-from</code> chain</h2>
 <p>The universal markdown-export chain (§11.4.65): one source, two
 exports.</p>
@@ -671,7 +712,7 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="
 regenerates → <code>guide_pdf</code> regenerates. Edit nothing →
 early-cutoff → exit 0, no writes.</p>
 <hr />
-<h2 id="7-annotated-example--sync-edge">7. Annotated example —
+<h2 id="annotated-example-sync-edge">7. Annotated example —
 <code>sync</code> edge</h2>
 <p>The issues chain (§11.4.93 / §11.4.12): DB is the single source of
 truth, bidirectionally synced with Markdown, then exported.</p>
@@ -699,10 +740,10 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="
 <span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">md-to-html</span><span class="kw">:</span><span class="at">         </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> pandoc-html </span><span class="kw">}</span></span>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">html-to-pdf</span><span class="kw">:</span><span class="at">        </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> weasyprint-pdf </span><span class="kw">}</span></span></code></pre></div>
 <p>Conflict rule: if BOTH <code>issues_md</code> and
-<code>items_db</code> are dirty in one run, docs_chain emits a conflict
+<code>items_db</code> are dirty in one run, Docs Chain emits a conflict
 (exit 2, no writes) per ARCHITECTURE §5.</p>
 <hr />
-<h2 id="8-validation-rules-summary">8. Validation rules summary</h2>
+<h2 id="validation-rules-summary">8. Validation rules summary</h2>
 <p>The loader (Phase 4) rejects a context (exit 4) when any holds:</p>
 <ol type="1">
 <li><code>context</code> is empty or missing.</li>
@@ -713,7 +754,7 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="
 <li>A transform spec has neither <code>builtin</code> nor
 <code>exec</code> (or has both).</li>
 <li>A <code>fingerprint</code> node lacks <code>members</code>.</li>
-<li>A <code>sync</code> edge's <code>authority</code> is neither
+<li>A <code>sync</code> edge’s <code>authority</code> is neither
 <code>a</code> nor <code>b</code>.</li>
 <li>The <code>derive-from</code> sub-graph contains a cycle (Kahn
 residual).</li>

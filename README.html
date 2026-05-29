@@ -237,22 +237,22 @@
   </style>
 </head>
 <body>
-<h1 id="docs_chain">docs_chain</h1>
-<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T09:30:00Z <strong>Status:</strong> Docs Chain Phases 1–3
+<h1 id="docs-chain">Docs Chain</h1>
+<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
+2026-05-29T12:00:00Z <strong>Status:</strong> Docs Chain Phases 1–3
 IMPLEMENTED + tested (<code>internal/hash</code> +
 <code>internal/graph</code> + <code>internal/adapter</code> +
 <code>internal/orchestrator</code> — <code>go test ./...</code> passes).
 Phases 4–7 PLANNED per the plan. This README and the docs under
 <code>docs/</code> mark each capability IMPLEMENTED vs PLANNED and do
 not claim working behaviour that is not yet built (§11.4.6).
-<strong>Authority:</strong> Operator mandate 2026-05-29 (docs_chain
+<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
 initiative)</p>
 <hr />
-<p>docs_chain is a universal, Go-implemented, <strong>bidirectional
+<p>Docs Chain is a universal, Go-implemented, <strong>bidirectional
 document-and-database dependency-propagation engine</strong>. When any
 member of a registered chain changes — a Markdown source, an HTML/PDF
-export, or a SQLite database — docs_chain detects the change by
+export, or a SQLite database — Docs Chain detects the change by
 <strong>content hash</strong> (not mtime) and propagates it through
 every connected member in every declared direction, regenerating and
 re-exporting atomically, so no tracked artefact can fall out of
@@ -428,7 +428,7 @@ markdown-export, CONTINUATION).</td>
 <tr>
 <td><a
 href="docs/CONSTITUTION_INTEGRATION.md"><code>docs/CONSTITUTION_INTEGRATION.md</code></a></td>
-<td>How the constitution submodule makes docs_chain available to every
+<td>How the constitution submodule makes Docs Chain available to every
 consuming project — inheritance model, config discovery, the §11.4.x
 anchors it satisfies, what a project gets for free vs must
 register.</td>

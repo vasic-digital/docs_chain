@@ -237,14 +237,14 @@
   </style>
 </head>
 <body>
-<h1 id="docs_chain--user-guide">docs_chain — User Guide</h1>
-<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
-2026-05-29T08:59:39Z <strong>Status:</strong> The Phase 1 core engine
+<h1 id="docs-chain-user-guide">Docs Chain — User Guide</h1>
+<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
+2026-05-29T12:00:00Z <strong>Status:</strong> The Phase 1 core engine
 (<code>internal/hash</code> + <code>internal/graph</code>) is
 IMPLEMENTED + tested (<code>go test ./...</code> passes). The CLI/daemon
 workflow described in this guide is PLANNED (Phases 2–4). See status
 tags per section. <strong>Authority:</strong> Operator mandate
-2026-05-29 (docs_chain initiative) <strong>Design provenance:</strong>
+2026-05-29 (Docs Chain initiative) <strong>Design provenance:</strong>
 authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
 project research tree (<code>docs/research/docs_chain/</code>); this
 document is the self-contained specification.</p>
@@ -265,7 +265,7 @@ guide is PLANNED</strong>. The copy-paste examples show the DESIGNED CLI
 interface so a consuming project can prepare its contexts ahead of the
 Phase 4 CLI landing. They are not claims that the binary runs today.</p>
 <hr />
-<h2 id="1-what-you-adopt-docs_chain-for">1. What you adopt docs_chain
+<h2 id="what-you-adopt-docs-chain-for">1. What you adopt Docs Chain
 for</h2>
 <p>If your project keeps any of these mutually-consistent, you are the
 audience:</p>
@@ -278,13 +278,17 @@ generated from it (and editable back into it).</li>
 source.</li>
 <li>Roster / corpus fingerprints that drive a Status doc.</li>
 </ul>
-<p>docs_chain replaces the per-purpose sync scripts each of these
+<p>Docs Chain replaces the per-purpose sync scripts each of these
 otherwise requires (see <a
 href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>).</p>
 <hr />
-<h2 id="2-prerequisites">2. Prerequisites</h2>
+<h2 id="prerequisites">2. Prerequisites</h2>
 <p><strong>Status: PLANNED (Phase 4).</strong></p>
 <table>
+<colgroup>
+<col style="width: 72%" />
+<col style="width: 27%" />
+</colgroup>
 <thead>
 <tr>
 <th>Requirement</th>
@@ -307,7 +311,7 @@ binary</td>
 transforms</td>
 </tr>
 <tr>
-<td><code>sqlite3</code> (or the project's DB binary, e.g. §11.4.93
+<td><code>sqlite3</code> (or the project’s DB binary, e.g. §11.4.93
 <code>workable-items</code>)</td>
 <td><code>sync</code> edges touching a <code>sqlite</code> node</td>
 </tr>
@@ -318,13 +322,13 @@ reference</td>
 </tr>
 </tbody>
 </table>
-<p>docs_chain shells out to these existing commands during migration, so
+<p>Docs Chain shells out to these existing commands during migration, so
 no rewrite of your current generators is required to start.</p>
 <hr />
-<h2 id="3-install--build">3. Install / build</h2>
+<h2 id="install-build">3. Install / build</h2>
 <p><strong>Status: PLANNED (Phase 1 build / Phase 6 submodule
 distribution).</strong></p>
-<h3 id="31-as-a-consuming-project-submodule-post-phase-6">3.1 As a
+<h3 id="as-a-consuming-project-submodule-post-phase-6">3.1 As a
 consuming-project submodule (post Phase 6)</h3>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Phase 6 is OPERATOR-GATED: the remote repo + submodule wiring are</span></span>
@@ -332,16 +336,16 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> submodule add git@github.com:vasic-digital/docs_chain.git docs_chain</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> submodule update <span class="at">--init</span> <span class="at">--recursive</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span> <span class="bu">cd</span> docs_chain <span class="kw">&amp;&amp;</span> <span class="ex">go</span> build <span class="at">-o</span> ../bin/docs_chain ./cmd/docs_chain <span class="kw">)</span></span></code></pre></div>
-<h3 id="32-build-from-a-checkout">3.2 Build from a checkout</h3>
+<h3 id="build-from-a-checkout">3.2 Build from a checkout</h3>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> docs_chain</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> build <span class="at">-o</span> ./docs_chain ./cmd/docs_chain</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./docs_chain</span> doctor          <span class="co"># validate any contexts you have defined</span></span></code></pre></div>
 <hr />
-<h2 id="4-initialize-docs_chain">4. Initialize
+<h2 id="initialize-.docs_chain">4. Initialize
 <code>.docs_chain/</code></h2>
 <p><strong>Status: PLANNED (Phase 4 — config loader).</strong></p>
-<p>docs_chain reads per-context YAML from
+<p>Docs Chain reads per-context YAML from
 <code>.docs_chain/contexts/</code> at your project root and writes its
 hash state to <code>.docs_chain/state.json</code>.</p>
 <div class="sourceCode" id="cb3"><pre
@@ -354,7 +358,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="
 are your chain definitions. <code>state.json</code> is NOT tracked —
 <code>docs_chain sync</code> regenerates it from the live artefacts.</p>
 <hr />
-<h2 id="5-define-a-context">5. Define a context</h2>
+<h2 id="define-a-context">5. Define a context</h2>
 <p><strong>Status: PLANNED (Phase 4).</strong></p>
 <p>A context is one YAML file describing the nodes and edges of one
 chain. Minimal example for a single Markdown doc with HTML + PDF exports
@@ -379,22 +383,23 @@ recipes for the common chains (issues, fixed, status, roster, changelog,
 README doc-link, CONTINUATION) are in <a
 href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>.</p>
 <hr />
-<h2 id="6-register-nodes--edges-rules-of-thumb">6. Register nodes +
-edges (rules of thumb)</h2>
+<h2 id="register-nodes-edges-rules-of-thumb">6. Register nodes + edges
+(rules of thumb)</h2>
 <p><strong>Status: PLANNED (Phase 4).</strong></p>
 <ul>
 <li>Every artefact you want kept in sync is a <strong>node</strong> with
 a unique id and a <code>path</code>.</li>
 <li>A one-way generation is a <strong><code>derive-from</code></strong>
 edge <code>from → to</code> with a <code>transform</code>.</li>
-<li>A two-way single-source-of-truth relation (e.g.
-<code>markdown ↔︎ sqlite</code>) is a <strong><code>sync</code></strong>
-edge <code>a ↔︎ b</code> with a declared <code>authority</code>.</li>
-<li>The <code>derive-from</code> sub-graph MUST be acyclic — docs_chain
+<li>A two-way single-source-of-truth relation
+(e.g. <code>markdown ↔︎ sqlite</code>) is a
+<strong><code>sync</code></strong> edge <code>a ↔︎ b</code> with a
+declared <code>authority</code>.</li>
+<li>The <code>derive-from</code> sub-graph MUST be acyclic — Docs Chain
 refuses to run on a cycle (exit 4).</li>
 </ul>
 <hr />
-<h2 id="7-run-a-one-shot-sync">7. Run a one-shot sync</h2>
+<h2 id="run-a-one-shot-sync">7. Run a one-shot sync</h2>
 <p><strong>Status: PLANNED (Phase 4 — <code>sync</code>).</strong></p>
 <div class="sourceCode" id="cb6"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync one context</span></span>
@@ -404,6 +409,11 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docs_chain</span> sync <span class="at">--all</span></span></code></pre></div>
 <p>Exit-code contract:</p>
 <table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 39%" />
+<col style="width: 34%" />
+</colgroup>
 <thead>
 <tr>
 <th>Exit</th>
@@ -438,7 +448,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="
 error before commit, every live artefact and the DB are left
 byte-identical to the pre-run state.</p>
 <hr />
-<h2 id="8-run-the-watch-daemon">8. Run the watch daemon</h2>
+<h2 id="run-the-watch-daemon">8. Run the watch daemon</h2>
 <p><strong>Status: PLANNED (Phase 4 — fsnotify daemon).</strong></p>
 <p>For interactive development, the watch daemon runs <code>sync</code>
 automatically on a debounced settle after edits:</p>
@@ -449,14 +459,14 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="
 <code>vasic-digital/Watcher</code>) — no external daemon process is
 required.</p>
 <hr />
-<h2 id="9-interpret-and-resolve-conflicts">9. Interpret and resolve
+<h2 id="interpret-and-resolve-conflicts">9. Interpret and resolve
 conflicts</h2>
 <p><strong>Status: PLANNED (Phase 3 conflict semantics / Phase 4
 surfacing).</strong></p>
 <p>A conflict (exit 2) means <strong>both</strong> sides of a
 <code>sync</code> edge changed since the last sync — for example,
 <code>Issues.md</code> was hand-edited AND
-<code>workable_items.db</code> was mutated by another tool. docs_chain
+<code>workable_items.db</code> was mutated by another tool. Docs Chain
 writes nothing and reports which nodes are both-dirty.</p>
 <p>To resolve (per §11.4.66 — no silent merge, no guessing per
 §11.4.6):</p>
@@ -467,10 +477,10 @@ writes nothing and reports which nodes are both-dirty.</p>
 <li>Re-run <code>docs_chain sync &lt;context&gt;</code> — now exactly
 one side is dirty and the run proceeds.</li>
 </ol>
-<p>docs_chain will never auto-merge two divergent edits; that decision
+<p>Docs Chain will never auto-merge two divergent edits; that decision
 is yours.</p>
 <hr />
-<h2 id="10-ci-integration">10. CI integration</h2>
+<h2 id="ci-integration">10. CI integration</h2>
 <p><strong>Status: PLANNED (Phase 4 <code>verify</code>; Phase 7.4
 operator-gated pre-build wiring).</strong></p>
 <p>Use the read-only <code>verify</code> command as a gate: it reports
@@ -491,9 +501,14 @@ governance-adjacent gate file.</p>
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docs_chain</span> graph issues   <span class="co"># DOT/JSON of the issues chain</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docs_chain</span> doctor         <span class="co"># validate all contexts + state integrity</span></span></code></pre></div>
 <hr />
-<h2 id="11-troubleshooting">11. Troubleshooting</h2>
+<h2 id="troubleshooting">11. Troubleshooting</h2>
 <p><strong>Status: PLANNED (Phase 4 — diagnostics).</strong></p>
 <table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 25%" />
+<col style="width: 42%" />
+</colgroup>
 <thead>
 <tr>
 <th>Symptom</th>
@@ -517,12 +532,12 @@ or fix the field</td>
 <tr>
 <td>exit 3</td>
 <td>a transform command failed</td>
-<td>check the transform's stderr in
+<td>check the transform’s stderr in
 <code>qa-results/docs_chain/&lt;run-id&gt;/</code>; run rolled back, no
 live damage</td>
 </tr>
 <tr>
-<td>"node hash mismatch on a file you did not edit"</td>
+<td>“node hash mismatch on a file you did not edit”</td>
 <td>a transform is non-deterministic</td>
 <td>the transform must produce byte-stable output (§11.4.50); fix the
 generator</td>

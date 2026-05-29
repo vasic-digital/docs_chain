@@ -1,16 +1,16 @@
-# docs_chain
+# Docs Chain
 
-**Revision:** 2
-**Last modified:** 2026-05-29T09:30:00Z
+**Revision:** 3
+**Last modified:** 2026-05-29T12:00:00Z
 **Status:** Docs Chain Phases 1–3 IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` — `go test ./...` passes). Phases 4–7 PLANNED per the plan. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
-**Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
+**Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 
 ---
 
-docs_chain is a universal, Go-implemented, **bidirectional
+Docs Chain is a universal, Go-implemented, **bidirectional
 document-and-database dependency-propagation engine**. When any member of
 a registered chain changes — a Markdown source, an HTML/PDF export, or a
-SQLite database — docs_chain detects the change by **content hash** (not
+SQLite database — Docs Chain detects the change by **content hash** (not
 mtime) and propagates it through every connected member in every declared
 direction, regenerating and re-exporting atomically, so no tracked
 artefact can fall out of sync.
@@ -90,7 +90,7 @@ pages describe their DESIGNED contract.
 | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | End-to-end adoption guide — prerequisites, build, init `.docs_chain/`, define a context, run `sync`, the watch daemon, conflict resolution, CI integration. |
 | [`docs/CONFIG_SCHEMA.md`](docs/CONFIG_SCHEMA.md) | Formal per-context YAML reference — every field, type, allowed values, defaults, validation rules; annotated `derive-from` + `sync` examples. |
 | [`docs/USE_CASE_CATALOGUE.md`](docs/USE_CASE_CATALOGUE.md) | Living registry of 8 ready-to-use chain recipes (issues, fixed, status, roster/corpus, changelog, README doc-link, universal markdown-export, CONTINUATION). |
-| [`docs/CONSTITUTION_INTEGRATION.md`](docs/CONSTITUTION_INTEGRATION.md) | How the constitution submodule makes docs_chain available to every consuming project — inheritance model, config discovery, the §11.4.x anchors it satisfies, what a project gets for free vs must register. |
+| [`docs/CONSTITUTION_INTEGRATION.md`](docs/CONSTITUTION_INTEGRATION.md) | How the constitution submodule makes Docs Chain available to every consuming project — inheritance model, config discovery, the §11.4.x anchors it satisfies, what a project gets for free vs must register. |
 
 ## Quick start (Phase 1 core engine)
 

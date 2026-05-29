@@ -1,9 +1,9 @@
-# docs_chain — HelixConstitution Integration
+# Docs Chain — HelixConstitution Integration
 
-**Revision:** 1
-**Last modified:** 2026-05-29T00:00:00Z
+**Revision:** 2
+**Last modified:** 2026-05-29T12:00:00Z
 **Status:** Design documentation — DESCRIBES the integration. The integration itself is PLANNED (Phase 6) and OPERATOR-GATED. This document does NOT implement it.
-**Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
+**Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
 ---
@@ -28,9 +28,9 @@ not a current fact.
 
 ## 1. The distribution model
 
-docs_chain ships as its own `vasic-digital` submodule and is consumed as a
+Docs Chain ships as its own `vasic-digital` submodule and is consumed as a
 CORE part of the HelixConstitution submodule. Once Phase 6 lands, any
-project that already inherits the constitution submodule gets docs_chain
+project that already inherits the constitution submodule gets Docs Chain
 **by reference** — the same inheritance mechanism the project already uses
 for the constitution's `CLAUDE.md` / `AGENTS.md` / `Constitution.md`.
 
@@ -57,9 +57,9 @@ injects its chains via config.
 
 Per §11.4.35 (canonical-root inheritance clarity), there are two layers:
 
-- **Canonical root (the constitution submodule).** Hosts the docs_chain
+- **Canonical root (the constitution submodule).** Hosts the Docs Chain
   engine reference + the universal anchor describing the mandate
-  docs_chain satisfies. Project-agnostic.
+  Docs Chain satisfies. Project-agnostic.
 - **Consumer (this and every other project).** Registers its own
   `.docs_chain/contexts/*.yaml`, invokes the engine via the path the
   constitution exposes, and lists its chains in its own docs.
@@ -89,14 +89,14 @@ the consumer's YAML (§11.4.28-B decoupling).
 
 ---
 
-## 4. §11.4.x anchors docs_chain satisfies / supersedes
+## 4. §11.4.x anchors Docs Chain satisfies / supersedes
 
-docs_chain is the mechanical engine behind a family of existing
+Docs Chain is the mechanical engine behind a family of existing
 documentation-sync mandates. Once a consuming project registers the
 matching context (see [`USE_CASE_CATALOGUE.md`](USE_CASE_CATALOGUE.md)),
 the engine enforces the anchor in place of the ad-hoc script.
 
-| Anchor | What it mandates | docs_chain mechanism | Recipe |
+| Anchor | What it mandates | Docs Chain mechanism | Recipe |
 |--------|------------------|----------------------|--------|
 | §11.4.12 | Issues_Summary always-sync | derive `summary ← markdown` + early-cutoff | (a) |
 | §11.4.53 | Fixed_Summary parity | derive `fixed_summary ← Fixed.md` | (b) |
@@ -116,7 +116,7 @@ the engine enforces the anchor in place of the ad-hoc script.
 | §11.4.50 | Deterministic consistency | `verify` is the deterministic sink-side check; byte-stable transforms | engine-wide |
 | §11.4.69 | Sink-side positive-evidence | per-run evidence to `qa-results/docs_chain/<run-id>/` | engine-wide |
 
-docs_chain does NOT replace the authoring discipline of any anchor (e.g.
+Docs Chain does NOT replace the authoring discipline of any anchor (e.g.
 the operator still writes the §11.4.44 revision header into the source);
 it replaces the **mechanical sync** the anchor requires.
 
@@ -126,7 +126,7 @@ it replaces the **mechanical sync** the anchor requires.
 
 ### 5.1 For free (provided by the constitution submodule once Phase 6 lands)
 
-- The docs_chain engine (Go binary + builtins: `pandoc-html`,
+- The Docs Chain engine (Go binary + builtins: `pandoc-html`,
   `weasyprint-pdf`, `colorize-html`, `members-fingerprint`,
   `gen-summary`, `md-to-sqlite` / `sqlite-to-md` adapters).
 - The CLI (`sync` / `verify` / `watch` / `graph` / `doctor`) and exit-code
@@ -152,7 +152,7 @@ it replaces the **mechanical sync** the anchor requires.
 
 **Status: PLANNED — usable once Phase 6 distribution + Phase 4 CLI land.**
 
-A project follows these steps to start using docs_chain:
+A project follows these steps to start using Docs Chain:
 
 1. Inherit the constitution submodule (already done by every governed
    project).

@@ -172,15 +172,15 @@
   </style>
 </head>
 <body>
-<h1 id="docs_chain-system-architecture">docs_chain — System
+<h1 id="docs-chain-system-architecture">Docs Chain — System
 Architecture</h1>
-<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T09:30:00Z <strong>Status:</strong> Design documentation — see
+<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
+2026-05-29T12:00:00Z <strong>Status:</strong> Design documentation — see
 per-section status tags (IMPLEMENTED vs PLANNED (Phase N)). Phases 1–3
 are now IMPLEMENTED + tested
 (<code>internal/{hash,graph,adapter,orchestrator}</code>); Phases 4–7
 remain PLANNED. <strong>Authority:</strong> Operator mandate 2026-05-29
-(docs_chain initiative) <strong>Design provenance:</strong>
+(Docs Chain initiative) <strong>Design provenance:</strong>
 authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
 project research tree (<code>docs/research/docs_chain/</code>); this
 document is the self-contained specification.</p>
@@ -206,11 +206,11 @@ integration) remain <strong>PLANNED</strong> and are tagged as such per
 section. This document describes the DESIGNED system and does not claim
 working behaviour that is not yet built (§11.4.6).</p>
 <hr />
-<h2 id="what-docs_chain-is">1. What docs_chain is</h2>
-<p>docs_chain is a universal, Go-implemented, <strong>bidirectional
+<h2 id="what-docs-chain-is">1. What Docs Chain is</h2>
+<p>Docs Chain is a universal, Go-implemented, <strong>bidirectional
 document-and-database dependency-propagation engine</strong>. When any
 member of a registered chain changes — a Markdown source, an HTML/PDF
-export, or a SQLite database — docs_chain detects the change by
+export, or a SQLite database — Docs Chain detects the change by
 <strong>content hash</strong> and propagates it through every connected
 member in every declared direction, regenerating and re-exporting as
 needed, so that no tracked artefact can fall out of sync.</p>
@@ -391,7 +391,7 @@ Bidirectional sync-edge authority + conflict semantics</h2>
 authority/conflict detection; Phase 3 — <code>orchestrator.Run</code>
 surfaces <code>ConflictError</code> with zero writes).</strong></p>
 <p>A naïve <code>md ↔︎ db</code> edge is a 2-cycle that would loop
-forever. docs_chain resolves it with a declared-authority algorithm
+forever. Docs Chain resolves it with a declared-authority algorithm
 (DESIGN §3):</p>
 <ol type="1">
 <li>On a change event, hash ALL nodes and compare to stored hashes → the
@@ -401,7 +401,7 @@ is dirty, that side is the <strong>source of truth for this
 run</strong>; the other side is regenerated from it via the appropriate
 transform (<code>md→db</code> or <code>db→md</code>).</li>
 <li>If <strong>both</strong> sides are dirty (a concurrent edit on each
-side), docs_chain <strong>stops and emits a conflict</strong> — exit
+side), Docs Chain <strong>stops and emits a conflict</strong> — exit
 non-zero, no writes. The operator resolves it (§11.4.66). No silent
 merge, no guessing (§11.4.6).</li>
 <li>After regenerating the non-authoritative side, its new hash is
@@ -456,7 +456,7 @@ Phase 3 — <code>orchestrator.Run</code> cycle-guard).</strong></p>
 algorithm (<code>RESEARCH.md</code> §5):</p>
 <ul>
 <li>The <strong><code>derive-from</code> sub-graph MUST be
-acyclic.</strong> docs_chain runs Kahn’s algorithm at load; any residual
+acyclic.</strong> Docs Chain runs Kahn’s algorithm at load; any residual
 nodes (a cycle) ⇒ config error and the engine refuses to run (exit
 4).</li>
 <li><strong><code>sync</code> pairs are collapsed to their
@@ -636,7 +636,7 @@ scripts).</strong></p>
 EXISTING scripts: behaviour is identical, but now orchestrated,
 content-hashed, atomic, and conflict-aware. Once a context is green for
 N cycles, the script’s internal re-export / parity logic migrates into
-docs_chain builtins and the script retires to a thin shim that calls
+Docs Chain builtins and the script retires to a thin shim that calls
 <code>docs_chain sync &lt;context&gt;</code>.</p>
 <p>See <a
 href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a> for

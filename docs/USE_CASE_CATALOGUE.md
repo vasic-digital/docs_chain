@@ -1,9 +1,9 @@
-# docs_chain — Use-Case Catalogue
+# Docs Chain — Use-Case Catalogue
 
-**Revision:** 1
-**Last modified:** 2026-05-29T00:00:00Z
+**Revision:** 2
+**Last modified:** 2026-05-29T12:00:00Z
 **Status:** Living registry. Every recipe below is a DESIGNED context. Engine support is PLANNED (Phases 1–4); ATMOSphere wiring is PLANNED (Phase 7). See per-recipe status tags.
-**Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
+**Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
 ---
@@ -362,7 +362,7 @@ application/service source trees.
 - **Edge directions:** `CONTINUATION.md → .html → .pdf` (derive).
 - **Transform:** `pandoc-html`, `weasyprint-pdf`. (Revision-header
   freshness is the source-edit author's responsibility per §11.4.44 /
-  §12.10; docs_chain keeps the exports from drifting behind the source.)
+  §12.10; Docs Chain keeps the exports from drifting behind the source.)
 - **Mandate:** §12.10 (CONTINUATION maintenance) · §11.4.44 (revision
   header — the `Last updated:` line IS the §11.4.44 `Last modified:`
   line).

@@ -1,9 +1,9 @@
-# docs_chain — System Architecture
+# Docs Chain — System Architecture
 
-**Revision:** 2
-**Last modified:** 2026-05-29T09:30:00Z
+**Revision:** 3
+**Last modified:** 2026-05-29T12:00:00Z
 **Status:** Design documentation — see per-section status tags (IMPLEMENTED vs PLANNED (Phase N)). Phases 1–3 are now IMPLEMENTED + tested (`internal/{hash,graph,adapter,orchestrator}`); Phases 4–7 remain PLANNED.
-**Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
+**Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
 ---
@@ -30,12 +30,12 @@ and does not claim working behaviour that is not yet built (§11.4.6).
 
 ---
 
-## 1. What docs_chain is
+## 1. What Docs Chain is
 
-docs_chain is a universal, Go-implemented, **bidirectional
+Docs Chain is a universal, Go-implemented, **bidirectional
 document-and-database dependency-propagation engine**. When any member of
 a registered chain changes — a Markdown source, an HTML/PDF export, or a
-SQLite database — docs_chain detects the change by **content hash** and
+SQLite database — Docs Chain detects the change by **content hash** and
 propagates it through every connected member in every declared direction,
 regenerating and re-exporting as needed, so that no tracked artefact can
 fall out of sync.
@@ -186,7 +186,7 @@ bidirectional `md ↔ db` edge from oscillating (§5).
 detection; Phase 3 — `orchestrator.Run` surfaces `ConflictError` with zero
 writes).**
 
-A naïve `md ↔ db` edge is a 2-cycle that would loop forever. docs_chain
+A naïve `md ↔ db` edge is a 2-cycle that would loop forever. Docs Chain
 resolves it with a declared-authority algorithm (DESIGN §3):
 
 1. On a change event, hash ALL nodes and compare to stored hashes → the
@@ -195,7 +195,7 @@ resolves it with a declared-authority algorithm (DESIGN §3):
    **source of truth for this run**; the other side is regenerated from
    it via the appropriate transform (`md→db` or `db→md`).
 3. If **both** sides are dirty (a concurrent edit on each side),
-   docs_chain **stops and emits a conflict** — exit non-zero, no writes.
+   Docs Chain **stops and emits a conflict** — exit non-zero, no writes.
    The operator resolves it (§11.4.66). No silent merge, no guessing
    (§11.4.6).
 4. After regenerating the non-authoritative side, its new hash is
@@ -259,7 +259,7 @@ cycle-guard).**
 Propagation runs in deterministic topological order using Kahn's
 algorithm (`RESEARCH.md` §5):
 
-- The **`derive-from` sub-graph MUST be acyclic.** docs_chain runs Kahn's
+- The **`derive-from` sub-graph MUST be acyclic.** Docs Chain runs Kahn's
   algorithm at load; any residual nodes (a cycle) ⇒ config error and the
   engine refuses to run (exit 4).
 - **`sync` pairs are collapsed to their authority** before the topo-sort,
@@ -435,7 +435,7 @@ Each ad-hoc sync script is wrapped as an `exec:` transform (DESIGN §8).
 Phase 7 registers the ATMOSphere contexts pointing at the EXISTING
 scripts: behaviour is identical, but now orchestrated, content-hashed,
 atomic, and conflict-aware. Once a context is green for N cycles, the
-script's internal re-export / parity logic migrates into docs_chain
+script's internal re-export / parity logic migrates into Docs Chain
 builtins and the script retires to a thin shim that calls
 `docs_chain sync <context>`.
 

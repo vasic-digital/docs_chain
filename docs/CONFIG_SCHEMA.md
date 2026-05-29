@@ -1,9 +1,9 @@
-# docs_chain — Configuration Schema Reference
+# Docs Chain — Configuration Schema Reference
 
-**Revision:** 1
-**Last modified:** 2026-05-29T00:00:00Z
+**Revision:** 2
+**Last modified:** 2026-05-29T12:00:00Z
 **Status:** Design documentation — the schema is PLANNED (Phase 4 — config loader + validation). Describes the DESIGNED YAML contract.
-**Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
+**Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
 ---
@@ -109,7 +109,7 @@ Two edge shapes. The `type` field selects which.
 | `transform_b_to_a` | transform name | conditional | derived from kinds when unambiguous | regenerates `a` from `b` |
 
 When the two transforms are omitted and the `(kind_a, kind_b)` pair maps
-to a known builtin pair (e.g. `markdown` ↔ `sqlite`), docs_chain selects
+to a known builtin pair (e.g. `markdown` ↔ `sqlite`), Docs Chain selects
 the builtin pair automatically; otherwise both MUST be specified.
 
 ---
@@ -128,7 +128,7 @@ A transform is either a builtin or an external command.
 |-------|------|----------|---------|------------|
 | `builtin` | enum | one-of | — | mutually exclusive with `exec` |
 | `exec` | string | one-of | — | a command/script path, project-root-relative or on `PATH`; mutually exclusive with `builtin` |
-| `args` | list<string> | no | `[]` | only with `exec`; appended after the input/output paths docs_chain passes |
+| `args` | list<string> | no | `[]` | only with `exec`; appended after the input/output paths Docs Chain passes |
 
 Exactly one of `builtin` / `exec` MUST be present.
 
@@ -147,11 +147,11 @@ Exactly one of `builtin` / `exec` MUST be present.
 ### 5.2 `exec:` transform contract
 
 An `exec:` transform is invoked with input path(s) and the staged output
-temp path supplied by docs_chain. It MUST:
+temp path supplied by Docs Chain. It MUST:
 
 - read ONLY from the declared input node paths;
-- write its result to the staged temp path docs_chain provides (never
-  directly to the live artefact — docs_chain owns the atomic rename, §8);
+- write its result to the staged temp path Docs Chain provides (never
+  directly to the live artefact — Docs Chain owns the atomic rename, §8);
 - exit 0 on success, non-zero on failure (triggers rollback, exit 3);
 - produce **byte-stable** output for identical input (§11.4.50 — a
   non-deterministic transform causes false drift and fails the Phase 2
@@ -216,7 +216,7 @@ transforms:
 ```
 
 Conflict rule: if BOTH `issues_md` and `items_db` are dirty in one run,
-docs_chain emits a conflict (exit 2, no writes) per ARCHITECTURE §5.
+Docs Chain emits a conflict (exit 2, no writes) per ARCHITECTURE §5.
 
 ---
 

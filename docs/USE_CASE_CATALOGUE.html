@@ -237,17 +237,17 @@
   </style>
 </head>
 <body>
-<h1 id="docs_chain--use-case-catalogue">docs_chain — Use-Case
+<h1 id="docs-chain-use-case-catalogue">Docs Chain — Use-Case
 Catalogue</h1>
-<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
-2026-05-29T00:00:00Z <strong>Status:</strong> Living registry. Every
+<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
+2026-05-29T12:00:00Z <strong>Status:</strong> Living registry. Every
 recipe below is a DESIGNED context. Engine support is PLANNED (Phases
 1–4); ATMOSphere wiring is PLANNED (Phase 7). See per-recipe status
-tags. <strong>Authority:</strong> Operator mandate 2026-05-29
-(docs_chain initiative) <strong>Design provenance:</strong>
-authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
-project research tree (<code>docs/research/docs_chain/</code>); this
-document is the self-contained specification.</p>
+tags. <strong>Authority:</strong> Operator mandate 2026-05-29 (Docs
+Chain initiative) <strong>Design provenance:</strong> authoritative
+Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research
+tree (<code>docs/research/docs_chain/</code>); this document is the
+self-contained specification.</p>
 <hr />
 <h2 id="status-legend">Status legend</h2>
 <p>Per §11.4.6 (no-guessing):</p>
@@ -267,6 +267,12 @@ YAML).</p>
 <hr />
 <h2 id="catalogue-index">Catalogue index</h2>
 <table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 13%" />
+<col style="width: 36%" />
+<col style="width: 45%" />
+</colgroup>
 <thead>
 <tr>
 <th>#</th>
@@ -343,7 +349,7 @@ is generated from the Markdown; HTML + PDF exports are derived.</li>
 <li><strong>Members:</strong> <code>workable_items.db</code> (sqlite),
 <code>Issues.md</code> (markdown), <code>Issues_Summary.md</code>
 (summary), <code>Issues.html</code> / <code>Issues.pdf</code> (exports),
-and the summary's own <code>.html</code> / <code>.pdf</code>.</li>
+and the summary’s own <code>.html</code> / <code>.pdf</code>.</li>
 <li><strong>Edge directions:</strong>
 <code>Issues.md ↔︎ workable_items.db</code> (sync, authority = db);
 <code>Issues.md → Issues_Summary.md</code> (derive);
@@ -473,7 +479,7 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="
 <p>Register one such context per integration domain
 (<code>status_dolby</code>, <code>status_players</code>, …).</p>
 <hr />
-<h2 id="d-roster--corpus-chain">(d) Roster / corpus chain</h2>
+<h2 id="d-roster-corpus-chain">(d) Roster / corpus chain</h2>
 <p><strong>Status: PLANNED (Phase 7).</strong></p>
 <ul>
 <li><strong>Purpose:</strong> when a tracked roster (installed apps) or
@@ -562,18 +568,18 @@ version or use a glob-expanding wrapper context (see recipe g).</p>
 <h2 id="f-readme-doc-link-chain">(f) README doc-link chain</h2>
 <p><strong>Status: PLANNED (Phase 7).</strong></p>
 <ul>
-<li><strong>Purpose:</strong> the README's Tracked-Items + Status
+<li><strong>Purpose:</strong> the README’s Tracked-Items + Status
 Documents section (per-doc revision + last-modified) re-renders whenever
-any linked doc changes; README's own HTML + PDF stay in sync.</li>
+any linked doc changes; README’s own HTML + PDF stay in sync.</li>
 <li><strong>Members:</strong> every tracked-doc node feeding the link
 table, <code>README.md</code> (summary-like — regenerated section),
 <code>README.html</code> / <code>README.pdf</code>.</li>
 <li><strong>Edge directions:</strong> each linked doc
 <code>→ README.md</code> (derive — the doc-link generator reads each
-source's revision header); <code>README.md → .html → .pdf</code>
+source’s revision header); <code>README.md → .html → .pdf</code>
 (derive).</li>
 <li><strong>Transform:</strong> <code>gen-readme-doc-links</code> (reads
-each source's §11.4.44 revision header), <code>pandoc-html</code>,
+each source’s §11.4.44 revision header), <code>pandoc-html</code>,
 <code>weasyprint-pdf</code>.</li>
 <li><strong>Mandate:</strong> §11.4.57 (README doc-link section) ·
 §11.4.59 (README always-sync export).</li>
@@ -661,7 +667,7 @@ resuming work reads a non-divergent view across formats.</li>
 <code>CONTINUATION.md → .html → .pdf</code> (derive).</li>
 <li><strong>Transform:</strong> <code>pandoc-html</code>,
 <code>weasyprint-pdf</code>. (Revision-header freshness is the
-source-edit author's responsibility per §11.4.44 / §12.10; docs_chain
+source-edit author’s responsibility per §11.4.44 / §12.10; Docs Chain
 keeps the exports from drifting behind the source.)</li>
 <li><strong>Mandate:</strong> §12.10 (CONTINUATION maintenance) ·
 §11.4.44 (revision header — the <code>Last updated:</code> line IS the

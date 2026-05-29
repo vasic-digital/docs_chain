@@ -1,9 +1,9 @@
-# docs_chain — User Guide
+# Docs Chain — User Guide
 
-**Revision:** 1
-**Last modified:** 2026-05-29T08:59:39Z
+**Revision:** 2
+**Last modified:** 2026-05-29T12:00:00Z
 **Status:** The Phase 1 core engine (`internal/hash` + `internal/graph`) is IMPLEMENTED + tested (`go test ./...` passes). The CLI/daemon workflow described in this guide is PLANNED (Phases 2–4). See status tags per section.
-**Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
+**Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
 ---
@@ -25,7 +25,7 @@ Phase 4 CLI landing. They are not claims that the binary runs today.
 
 ---
 
-## 1. What you adopt docs_chain for
+## 1. What you adopt Docs Chain for
 
 If your project keeps any of these mutually-consistent, you are the
 audience:
@@ -37,7 +37,7 @@ audience:
   source.
 - Roster / corpus fingerprints that drive a Status doc.
 
-docs_chain replaces the per-purpose sync scripts each of these otherwise
+Docs Chain replaces the per-purpose sync scripts each of these otherwise
 requires (see [`USE_CASE_CATALOGUE.md`](USE_CASE_CATALOGUE.md)).
 
 ---
@@ -54,7 +54,7 @@ requires (see [`USE_CASE_CATALOGUE.md`](USE_CASE_CATALOGUE.md)).
 | `sqlite3` (or the project's DB binary, e.g. §11.4.93 `workable-items`) | `sync` edges touching a `sqlite` node |
 | Any `exec:` transform scripts your contexts reference | migration adapters |
 
-docs_chain shells out to these existing commands during migration, so no
+Docs Chain shells out to these existing commands during migration, so no
 rewrite of your current generators is required to start.
 
 ---
@@ -87,7 +87,7 @@ go build -o ./docs_chain ./cmd/docs_chain
 
 **Status: PLANNED (Phase 4 — config loader).**
 
-docs_chain reads per-context YAML from `.docs_chain/contexts/` at your
+Docs Chain reads per-context YAML from `.docs_chain/contexts/` at your
 project root and writes its hash state to `.docs_chain/state.json`.
 
 ```bash
@@ -149,7 +149,7 @@ doc-link, CONTINUATION) are in
   `transform`.
 - A two-way single-source-of-truth relation (e.g. `markdown ↔ sqlite`) is
   a **`sync`** edge `a ↔ b` with a declared `authority`.
-- The `derive-from` sub-graph MUST be acyclic — docs_chain refuses to run
+- The `derive-from` sub-graph MUST be acyclic — Docs Chain refuses to run
   on a cycle (exit 4).
 
 ---
@@ -204,7 +204,7 @@ Stop it with Ctrl-C. The daemon uses fsnotify (via
 
 A conflict (exit 2) means **both** sides of a `sync` edge changed since
 the last sync — for example, `Issues.md` was hand-edited AND
-`workable_items.db` was mutated by another tool. docs_chain writes
+`workable_items.db` was mutated by another tool. Docs Chain writes
 nothing and reports which nodes are both-dirty.
 
 To resolve (per §11.4.66 — no silent merge, no guessing per §11.4.6):
@@ -215,7 +215,7 @@ To resolve (per §11.4.66 — no silent merge, no guessing per §11.4.6):
 4. Re-run `docs_chain sync <context>` — now exactly one side is dirty and
    the run proceeds.
 
-docs_chain will never auto-merge two divergent edits; that decision is
+Docs Chain will never auto-merge two divergent edits; that decision is
 yours.
 
 ---
