@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CONSTITUTION_INTEGRATION</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<h1 id="docs_chain--helixconstitution-integration">docs_chain —
+HelixConstitution Integration</h1>
+<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
+2026-05-29T00:00:00Z <strong>Status:</strong> Design documentation —
+DESCRIBES the integration. The integration itself is PLANNED (Phase 6)
+and OPERATOR-GATED. This document does NOT implement it.
+<strong>Authority:</strong> Operator mandate 2026-05-29 (docs_chain
+initiative) <strong>Design provenance:</strong> authoritative Phase-0
+DESIGN / RESEARCH / PLAN live in the consuming project research tree
+(<code>docs/research/docs_chain/</code>); this document is the
+self-contained specification.</p>
+<hr />
+<h2 id="status-and-scope-boundary">Status and scope boundary</h2>
+<p><strong>PLANNED (Phase 6) — OPERATOR-GATED.</strong> Phase 6 of
+<code>PLAN.md</code> covers remote-repo creation, the
+constitution-submodule pointer add, and the governance-file edits
+(Constitution.md / CLAUDE.md / AGENTS.md / QWEN.md). Those steps are
+performed by the operator, not by an agent (§11.4.66 / §11.4.35 /
+§11.4.26).</p>
+<p>This document <strong>describes</strong> the integration model so the
+operator and future consuming projects know the plan. It is explicitly
+<strong>not</strong> an implementation: nothing here edits any
+governance file, creates any remote, or adds any submodule. The reader
+should treat every "the constitution submodule will …" statement as the
+DESIGNED Phase 6 outcome, not a current fact.</p>
+<hr />
+<h2 id="1-the-distribution-model">1. The distribution model</h2>
+<p>docs_chain ships as its own <code>vasic-digital</code> submodule and
+is consumed as a CORE part of the HelixConstitution submodule. Once
+Phase 6 lands, any project that already inherits the constitution
+submodule gets docs_chain <strong>by reference</strong> — the same
+inheritance mechanism the project already uses for the constitution's
+<code>CLAUDE.md</code> / <code>AGENTS.md</code> /
+<code>Constitution.md</code>.</p>
+<pre class="mermaid"><code>graph TD
+    DCRepo[vasic-digital/docs_chain&lt;br/&gt;standalone submodule] --&gt; CONST[HelixConstitution submodule]
+    CONST --&gt; P1[Consuming project A]
+    CONST --&gt; P2[Consuming project B]
+    CONST --&gt; P3[Consuming project N]
+    P1 -.registers.-&gt; C1[.docs_chain/contexts/*.yaml]
+    P2 -.registers.-&gt; C2[.docs_chain/contexts/*.yaml]
+    P3 -.registers.-&gt; C3[.docs_chain/contexts/*.yaml]</code></pre>
+<p>The engine (Go binary + builtins) is shared and project-agnostic; the
+<strong>contexts</strong> (<code>.docs_chain/contexts/*.yaml</code>) are
+per-project data the consumer owns and registers. This mirrors the
+§11.4.28 decoupling rule: the submodule never carries project-specific
+context; the consumer injects its chains via config.</p>
+<hr />
+<h2 id="2-inheritance-model">2. Inheritance model</h2>
+<p>Per §11.4.35 (canonical-root inheritance clarity), there are two
+layers:</p>
+<ul>
+<li><strong>Canonical root (the constitution submodule).</strong> Hosts
+the docs_chain engine reference + the universal anchor describing the
+mandate docs_chain satisfies. Project-agnostic.</li>
+<li><strong>Consumer (this and every other project).</strong> Registers
+its own <code>.docs_chain/contexts/*.yaml</code>, invokes the engine via
+the path the constitution exposes, and lists its chains in its own
+docs.</li>
+</ul>
+<p>A consuming project does NOT copy the engine; it references it at the
+path the constitution exposes (the same pattern §11.4.80 uses for the
+<code>codegraph_*</code> scripts — inherited by reference, never
+copied).</p>
+<hr />
+<h2 id="3-config-discovery-convention">3. Config-discovery
+convention</h2>
+<p><strong>Status: PLANNED (Phase 4 loader + Phase 6
+distribution).</strong></p>
+<p>The discovery convention a consuming project follows out of the
+box:</p>
+<ol type="1">
+<li>Engine resolves contexts from
+<code>&lt;project-root&gt;/.docs_chain/contexts/</code>.</li>
+<li>Each <code>*.yaml</code> is one independent context (ARCHITECTURE
+§9).</li>
+<li><code>state.json</code> lives at
+<code>&lt;project-root&gt;/.docs_chain/state.json</code>, gitignored,
+regenerated on demand (§11.4.77 — the regeneration mechanism is
+<code>docs_chain sync</code>).</li>
+<li><code>docs_chain sync --all</code> /
+<code>docs_chain verify --all</code> walk every context file;
+per-context commands take the context name.</li>
+</ol>
+<p>No hardcoded project paths live in the engine — every path is
+supplied by the consumer's YAML (§11.4.28-B decoupling).</p>
+<hr />
+<h2 id="4-114x-anchors-docs_chain-satisfies--supersedes">4. §11.4.x
+anchors docs_chain satisfies / supersedes</h2>
+<p>docs_chain is the mechanical engine behind a family of existing
+documentation-sync mandates. Once a consuming project registers the
+matching context (see <a
+href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>),
+the engine enforces the anchor in place of the ad-hoc script.</p>
+<table>
+<thead>
+<tr>
+<th>Anchor</th>
+<th>What it mandates</th>
+<th>docs_chain mechanism</th>
+<th>Recipe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§11.4.12</td>
+<td>Issues_Summary always-sync</td>
+<td>derive <code>summary ← markdown</code> + early-cutoff</td>
+<td>(a)</td>
+</tr>
+<tr>
+<td>§11.4.53</td>
+<td>Fixed_Summary parity</td>
+<td>derive <code>fixed_summary ← Fixed.md</code></td>
+<td>(b)</td>
+</tr>
+<tr>
+<td>§11.4.45</td>
+<td>Status.md maintenance</td>
+<td>status-doc context</td>
+<td>(c)</td>
+</tr>
+<tr>
+<td>§11.4.56</td>
+<td>Status_Summary two-audience parity</td>
+<td>derive <code>status_summary ← Status.md</code></td>
+<td>(c)</td>
+</tr>
+<tr>
+<td>§11.4.57</td>
+<td>README doc-link section</td>
+<td>multi-input derive into README</td>
+<td>(f)</td>
+</tr>
+<tr>
+<td>§11.4.59</td>
+<td>README always-sync export</td>
+<td>derive README <code>.html</code>/<code>.pdf</code></td>
+<td>(f)</td>
+</tr>
+<tr>
+<td>§11.4.60</td>
+<td>Documentation composite-sync</td>
+<td>the composite of all derive edges</td>
+<td>(a)–(h)</td>
+</tr>
+<tr>
+<td>§11.4.65</td>
+<td>Universal markdown export</td>
+<td>derive <code>.html</code> + <code>.pdf</code> per
+<code>.md</code></td>
+<td>(e), (g)</td>
+</tr>
+<tr>
+<td>§11.4.86</td>
+<td>Roster/corpus auto-sync (fingerprint not mtime)</td>
+<td><code>members-fingerprint</code> node + content-hash detection</td>
+<td>(d)</td>
+</tr>
+<tr>
+<td>§11.4.93</td>
+<td>Workable-items DB single source of truth</td>
+<td>bidirectional <code>sync</code> edge <code>md ↔︎ sqlite</code></td>
+<td>(a)</td>
+</tr>
+<tr>
+<td>§11.4.95</td>
+<td>DB tracked + WAL-checkpoint commit</td>
+<td>atomic SQLite-txn commit phase</td>
+<td>(a)</td>
+</tr>
+<tr>
+<td>§12.10</td>
+<td>CONTINUATION maintenance</td>
+<td>derive CONTINUATION exports</td>
+<td>(h)</td>
+</tr>
+<tr>
+<td>§11.4.44</td>
+<td>Document revision header</td>
+<td>source-author owns header; engine keeps exports in sync</td>
+<td>(a)–(h)</td>
+</tr>
+<tr>
+<td>§9.2</td>
+<td>Zero-risk data safety</td>
+<td>atomic-rename commit + rollback + optional hardlink backup</td>
+<td>engine-wide</td>
+</tr>
+<tr>
+<td>§11.4.6</td>
+<td>No-guessing</td>
+<td>both-dirty <code>sync</code> → conflict (exit 2), never silent
+merge</td>
+<td>engine-wide</td>
+</tr>
+<tr>
+<td>§11.4.50</td>
+<td>Deterministic consistency</td>
+<td><code>verify</code> is the deterministic sink-side check;
+byte-stable transforms</td>
+<td>engine-wide</td>
+</tr>
+<tr>
+<td>§11.4.69</td>
+<td>Sink-side positive-evidence</td>
+<td>per-run evidence to
+<code>qa-results/docs_chain/&lt;run-id&gt;/</code></td>
+<td>engine-wide</td>
+</tr>
+</tbody>
+</table>
+<p>docs_chain does NOT replace the authoring discipline of any anchor
+(e.g. the operator still writes the §11.4.44 revision header into the
+source); it replaces the <strong>mechanical sync</strong> the anchor
+requires.</p>
+<hr />
+<h2 id="5-what-a-consuming-project-gets-for-free-vs-must-register">5.
+What a consuming project gets for free vs must register</h2>
+<h3
+id="51-for-free-provided-by-the-constitution-submodule-once-phase-6-lands">5.1
+For free (provided by the constitution submodule once Phase 6
+lands)</h3>
+<ul>
+<li>The docs_chain engine (Go binary + builtins:
+<code>pandoc-html</code>, <code>weasyprint-pdf</code>,
+<code>colorize-html</code>, <code>members-fingerprint</code>,
+<code>gen-summary</code>, <code>md-to-sqlite</code> /
+<code>sqlite-to-md</code> adapters).</li>
+<li>The CLI (<code>sync</code> / <code>verify</code> /
+<code>watch</code> / <code>graph</code> / <code>doctor</code>) and
+exit-code contract.</li>
+<li>Atomic-commit + rollback + conflict semantics (ARCHITECTURE §5,
+§8).</li>
+<li>Content-hash change detection (§11.4.86 not-mtime).</li>
+<li>The use-case recipe catalogue (this submodule's <a
+href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>) as
+a starting point.</li>
+</ul>
+<h3 id="52-must-register-the-consumer-owns">5.2 Must register (the
+consumer owns)</h3>
+<ul>
+<li>Its own <code>.docs_chain/contexts/*.yaml</code> describing its
+chains.</li>
+<li>The <code>exec:</code> transform scripts its contexts reference
+(during migration — its existing generators).</li>
+<li>The <code>.gitignore</code> entries for <code>state.json</code> and
+<code>*.docs_chain.tmp</code>.</li>
+<li>The CI / pre-build wiring that calls <code>docs_chain verify</code>
+(operator-gated where it edits a gate file — Phase 7.4).</li>
+<li>Any project-specific node kinds beyond the universal set
+(rare).</li>
+</ul>
+<hr />
+<h2 id="6-out-of-the-box-adoption-checklist">6. Out-of-the-box adoption
+checklist</h2>
+<p><strong>Status: PLANNED — usable once Phase 6 distribution + Phase 4
+CLI land.</strong></p>
+<p>A project follows these steps to start using docs_chain:</p>
+<ol type="1">
+<li>Inherit the constitution submodule (already done by every governed
+project).</li>
+<li>Build / obtain the <code>docs_chain</code> binary (ARCHITECTURE §11;
+USER_GUIDE §3).</li>
+<li><code>mkdir -p .docs_chain/contexts</code> and add
+<code>state.json</code> + <code>*.docs_chain.tmp</code> to
+<code>.gitignore</code>.</li>
+<li>Copy the relevant recipes from <a
+href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>,
+adjusting paths.</li>
+<li><code>docs_chain doctor</code> to validate every context.</li>
+<li><code>docs_chain sync --all</code> to bring everything in sync;
+inspect any conflicts (USER_GUIDE §9).</li>
+<li>Wire <code>docs_chain verify --all</code> into CI / the pre-build
+gate (operator-gated where it edits a gate file).</li>
+<li>Optionally run <code>docs_chain watch</code> during interactive
+development.</li>
+</ol>
+<hr />
+<h2
+id="7-phase-6-governance-integration-operator-gated--described-not-done">7.
+Phase-6 governance integration (operator-gated — described, not
+done)</h2>
+<p>Per <code>PLAN.md</code> Phase 6, the operator (NOT an agent)
+performs:</p>
+<ul>
+<li>(6.1) create <code>vasic-digital/docs_chain</code> on GitHub +
+GitLab via gh / glab (§11.4.66 — agent must not create remotes).</li>
+<li>(6.2) <code>install_upstreams</code> recipes + multi-mirror push
+(§11.4.36 / §2.1).</li>
+<li>(6.3) add the docs_chain submodule to the constitution submodule
+(operator authorises the governance edit).</li>
+<li>(6.4) governance-file integration — the new anchor + propagation
+gate in Constitution.md / CLAUDE.md / AGENTS.md / QWEN.md (§11.4.35 /
+§11.4.26 — operator edits governance).</li>
+<li>(6.5) <code>helix-deps.yaml</code> manifest (§11.4.31), plus the
+cross-project bootstrap Challenge that proves a fresh consumer can
+register a chain and <code>sync</code> works with captured
+wire-evidence.</li>
+</ul>
+<p>This documentation set is the agent-executable companion to those
+operator-gated steps; it carries no governance edits itself.</p>
+</body>
+</html>

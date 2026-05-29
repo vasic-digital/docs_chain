@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CONFIG_SCHEMA</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<h1 id="docs_chain--configuration-schema-reference">docs_chain —
+Configuration Schema Reference</h1>
+<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
+2026-05-29T00:00:00Z <strong>Status:</strong> Design documentation — the
+schema is PLANNED (Phase 4 — config loader + validation). Describes the
+DESIGNED YAML contract. <strong>Authority:</strong> Operator mandate
+2026-05-29 (docs_chain initiative) <strong>Design provenance:</strong>
+authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
+project research tree (<code>docs/research/docs_chain/</code>); this
+document is the self-contained specification.</p>
+<hr />
+<h2 id="status">Status</h2>
+<p><strong>PLANNED (Phase 4).</strong> The YAML loader and validator
+land in Phase 4 (<code>internal/config</code>). This document is the
+formal contract a consuming project writes against; it is not a claim
+that the loader parses it today.</p>
+<hr />
+<h2 id="1-file-location-and-discovery">1. File location and
+discovery</h2>
+<ul>
+<li>One YAML file per context under
+<code>.docs_chain/contexts/&lt;name&gt;.yaml</code> at the project
+root.</li>
+<li>The filename stem SHOULD match the <code>context:</code> field
+value.</li>
+<li>Each context is independent:
+<code>docs_chain sync &lt;name&gt;</code> loads only
+<code>&lt;name&gt;.yaml</code>; <code>docs_chain sync --all</code> loads
+every file in the directory.</li>
+</ul>
+<hr />
+<h2 id="2-top-level-document-schema">2. Top-level document schema</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span><span class="at"> &lt;string&gt;</span><span class="co">          # REQUIRED — unique context name</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> &lt;string&gt;</span><span class="co">      # OPTIONAL — human-readable purpose</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nodes</span><span class="kw">:</span><span class="at"> &lt;map&gt;</span><span class="co">               # REQUIRED — node-id -&gt; node-spec</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">edges</span><span class="kw">:</span><span class="at"> &lt;list&gt;</span><span class="co">              # REQUIRED — list of edge-spec</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">transforms</span><span class="kw">:</span><span class="at"> &lt;map&gt;</span><span class="co">          # REQUIRED if any edge names a transform</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>context</code></td>
+<td>string</td>
+<td>yes</td>
+<td>—</td>
+<td>non-empty; SHOULD match filename stem; unique across
+<code>.docs_chain/contexts/</code></td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>no</td>
+<td><code>""</code></td>
+<td>free text</td>
+</tr>
+<tr>
+<td><code>nodes</code></td>
+<td>map&lt;string, node-spec&gt;</td>
+<td>yes</td>
+<td>—</td>
+<td>≥1 entry; keys are node ids, unique within the context</td>
+</tr>
+<tr>
+<td><code>edges</code></td>
+<td>list<edge-spec></td>
+<td>yes</td>
+<td>—</td>
+<td><code>derive-from</code> sub-graph MUST be acyclic</td>
+</tr>
+<tr>
+<td><code>transforms</code></td>
+<td>map&lt;string, transform-spec&gt;</td>
+<td>conditional</td>
+<td><code>{}</code></td>
+<td>every transform name referenced by an edge MUST be defined here</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-node-spec">3. Node spec</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;node_id&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> &lt;node-kind&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">path</span><span class="kw">:</span><span class="at"> &lt;relative-path&gt; </span><span class="kw">}</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kind</code></td>
+<td>enum</td>
+<td>yes</td>
+<td>—</td>
+<td>one of the node kinds below</td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td>string</td>
+<td>yes</td>
+<td>—</td>
+<td>project-root-relative path to the artefact</td>
+</tr>
+<tr>
+<td><code>members</code></td>
+<td>string (glob)</td>
+<td>conditional</td>
+<td>—</td>
+<td>REQUIRED only for <code>kind: fingerprint</code>; glob enumerating
+the roster/corpus members (§11.4.86)</td>
+</tr>
+<tr>
+<td><code>exclude</code></td>
+<td>list<string></td>
+<td>no</td>
+<td><code>[]</code></td>
+<td>for <code>kind: fingerprint</code>: member globs to exclude (e.g.
+gitignored <code>downloaded/</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="31-allowed-kind-values">3.1 Allowed <code>kind</code>
+values</h3>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Role</th>
+<th>Direction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>markdown</code></td>
+<td>canonical <code>.md</code> source</td>
+<td>input</td>
+</tr>
+<tr>
+<td><code>html</code></td>
+<td>pandoc export</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>pdf</code></td>
+<td>weasyprint export</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>sqlite</code></td>
+<td>database</td>
+<td>input + derived (bidirectional)</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td>generated Markdown digest</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>§11.4.45 status doc</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>status_summary</code></td>
+<td>§11.4.56 two-audience digest</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>fingerprint</code></td>
+<td>roster/corpus member-list hash sidecar (§11.4.86)</td>
+<td>input</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-edge-spec">4. Edge spec</h2>
+<p>Two edge shapes. The <code>type</code> field selects which.</p>
+<h3 id="41-derive-from-one-way">4.1 <code>derive-from</code>
+(one-way)</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">to</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> &lt;transform_name&gt; </span><span class="kw">}</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>literal <code>derive-from</code></td>
+<td>yes</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>from</code></td>
+<td>node id</td>
+<td>yes</td>
+<td>—</td>
+<td>MUST exist in <code>nodes</code>; may be a list (multi-input
+transform)</td>
+</tr>
+<tr>
+<td><code>to</code></td>
+<td>node id</td>
+<td>yes</td>
+<td>—</td>
+<td>MUST exist in <code>nodes</code>; MUST NOT introduce a cycle</td>
+</tr>
+<tr>
+<td><code>transform</code></td>
+<td>transform name</td>
+<td>yes</td>
+<td>—</td>
+<td>MUST exist in <code>transforms</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-sync-bidirectional">4.2 <code>sync</code>
+(bidirectional)</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> sync</span><span class="kw">,</span><span class="at"> </span><span class="fu">a</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">b</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">authority</span><span class="kw">:</span><span class="at"> &lt;node_id&gt;</span><span class="kw">,</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">transform_a_to_b</span><span class="kw">:</span><span class="at"> &lt;transform_name&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform_b_to_a</span><span class="kw">:</span><span class="at"> &lt;transform_name&gt; </span><span class="kw">}</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>literal <code>sync</code></td>
+<td>yes</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>node id</td>
+<td>yes</td>
+<td>—</td>
+<td>MUST exist in <code>nodes</code></td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>node id</td>
+<td>yes</td>
+<td>—</td>
+<td>MUST exist in <code>nodes</code>; <code>a</code> ≠
+<code>b</code></td>
+</tr>
+<tr>
+<td><code>authority</code></td>
+<td>node id</td>
+<td>yes</td>
+<td>—</td>
+<td>MUST equal <code>a</code> or <code>b</code>; the default source of
+truth (ARCHITECTURE §5)</td>
+</tr>
+<tr>
+<td><code>transform_a_to_b</code></td>
+<td>transform name</td>
+<td>conditional</td>
+<td>derived from kinds when unambiguous</td>
+<td>regenerates <code>b</code> from <code>a</code></td>
+</tr>
+<tr>
+<td><code>transform_b_to_a</code></td>
+<td>transform name</td>
+<td>conditional</td>
+<td>derived from kinds when unambiguous</td>
+<td>regenerates <code>a</code> from <code>b</code></td>
+</tr>
+</tbody>
+</table>
+<p>When the two transforms are omitted and the
+<code>(kind_a, kind_b)</code> pair maps to a known builtin pair (e.g.
+<code>markdown</code> ↔︎ <code>sqlite</code>), docs_chain selects the
+builtin pair automatically; otherwise both MUST be specified.</p>
+<hr />
+<h2 id="5-transform-spec">5. Transform spec</h2>
+<p>A transform is either a builtin or an external command.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;transform_name&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> &lt;builtin-name&gt; </span><span class="kw">}</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># OR</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;transform_name&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> &lt;command&gt;</span><span class="kw">,</span><span class="at"> </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">&lt;arg&gt;</span><span class="kw">,</span><span class="at"> ...</span><span class="kw">]</span><span class="at"> </span><span class="kw">}</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>builtin</code></td>
+<td>enum</td>
+<td>one-of</td>
+<td>—</td>
+<td>mutually exclusive with <code>exec</code></td>
+</tr>
+<tr>
+<td><code>exec</code></td>
+<td>string</td>
+<td>one-of</td>
+<td>—</td>
+<td>a command/script path, project-root-relative or on
+<code>PATH</code>; mutually exclusive with <code>builtin</code></td>
+</tr>
+<tr>
+<td><code>args</code></td>
+<td>list<string></td>
+<td>no</td>
+<td><code>[]</code></td>
+<td>only with <code>exec</code>; appended after the input/output paths
+docs_chain passes</td>
+</tr>
+</tbody>
+</table>
+<p>Exactly one of <code>builtin</code> / <code>exec</code> MUST be
+present.</p>
+<h3 id="51-allowed-builtin-values">5.1 Allowed <code>builtin</code>
+values</h3>
+<table>
+<thead>
+<tr>
+<th>Builtin</th>
+<th>Maps</th>
+<th>Tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pandoc-html</code></td>
+<td><code>markdown → html</code></td>
+<td>pandoc</td>
+</tr>
+<tr>
+<td><code>weasyprint-pdf</code></td>
+<td><code>html → pdf</code> or <code>markdown → pdf</code></td>
+<td>weasyprint</td>
+</tr>
+<tr>
+<td><code>colorize-html</code></td>
+<td><code>html → html</code> post-process (§11.4.23)</td>
+<td>internal</td>
+</tr>
+<tr>
+<td><code>gen-summary</code></td>
+<td><code>markdown → summary</code> (pluggable generator)</td>
+<td>configured generator</td>
+</tr>
+<tr>
+<td><code>md-to-sqlite</code></td>
+<td><code>markdown → sqlite</code></td>
+<td>configured DB binary</td>
+</tr>
+<tr>
+<td><code>sqlite-to-md</code></td>
+<td><code>sqlite → markdown</code></td>
+<td>configured DB binary</td>
+</tr>
+<tr>
+<td><code>members-fingerprint</code></td>
+<td>members glob → <code>fingerprint</code> (§11.4.86)</td>
+<td>internal sha256-of-sorted-members</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-exec-transform-contract">5.2 <code>exec:</code> transform
+contract</h3>
+<p>An <code>exec:</code> transform is invoked with input path(s) and the
+staged output temp path supplied by docs_chain. It MUST:</p>
+<ul>
+<li>read ONLY from the declared input node paths;</li>
+<li>write its result to the staged temp path docs_chain provides (never
+directly to the live artefact — docs_chain owns the atomic rename,
+§8);</li>
+<li>exit 0 on success, non-zero on failure (triggers rollback, exit
+3);</li>
+<li>produce <strong>byte-stable</strong> output for identical input
+(§11.4.50 — a non-deterministic transform causes false drift and fails
+the Phase 2 meta-test).</li>
+</ul>
+<hr />
+<h2 id="6-annotated-example--derive-from-chain">6. Annotated example —
+<code>derive-from</code> chain</h2>
+<p>The universal markdown-export chain (§11.4.65): one source, two
+exports.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span><span class="at"> guide</span><span class="co">                              # context name (= filename stem)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> Markdown doc with html + pdf</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nodes</span><span class="kw">:</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">guide_md</span><span class="kw">:</span><span class="at">   </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> markdown</span><span class="kw">,</span><span class="at"> </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/guides/MY_GUIDE.md </span><span class="kw">}</span><span class="co">   # input</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">guide_html</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> html</span><span class="kw">,</span><span class="at">     </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/guides/MY_GUIDE.html </span><span class="kw">}</span><span class="co"> # derived</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">guide_pdf</span><span class="kw">:</span><span class="at">  </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> pdf</span><span class="kw">,</span><span class="at">      </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/guides/MY_GUIDE.pdf </span><span class="kw">}</span><span class="co">  # derived</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">edges</span><span class="kw">:</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">  # one-way: regenerate html from md</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> guide_md</span><span class="kw">,</span><span class="at">   </span><span class="fu">to</span><span class="kw">:</span><span class="at"> guide_html</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> md-to-html </span><span class="kw">}</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">  # one-way: regenerate pdf from html (so styling/colorization carries through)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> guide_html</span><span class="kw">,</span><span class="at"> </span><span class="fu">to</span><span class="kw">:</span><span class="at"> guide_pdf</span><span class="kw">,</span><span class="at">  </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> html-to-pdf </span><span class="kw">}</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">transforms</span><span class="kw">:</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">md-to-html</span><span class="kw">:</span><span class="at">  </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> pandoc-html </span><span class="kw">}</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">html-to-pdf</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> weasyprint-pdf </span><span class="kw">}</span></span></code></pre></div>
+<p>Propagation: edit <code>guide_md</code> → <code>guide_html</code>
+regenerates → <code>guide_pdf</code> regenerates. Edit nothing →
+early-cutoff → exit 0, no writes.</p>
+<hr />
+<h2 id="7-annotated-example--sync-edge">7. Annotated example —
+<code>sync</code> edge</h2>
+<p>The issues chain (§11.4.93 / §11.4.12): DB is the single source of
+truth, bidirectionally synced with Markdown, then exported.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span><span class="at"> issues</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> Workable-items tracker chain</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nodes</span><span class="kw">:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">items_db</span><span class="kw">:</span><span class="at">       </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> sqlite</span><span class="kw">,</span><span class="at">   </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/workable_items.db </span><span class="kw">}</span><span class="co">   # input + derived</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">issues_md</span><span class="kw">:</span><span class="at">      </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> markdown</span><span class="kw">,</span><span class="at"> </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/Issues.md </span><span class="kw">}</span><span class="co">            # input + derived</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">issues_summary</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> summary</span><span class="kw">,</span><span class="at">  </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/Issues_Summary.md </span><span class="kw">}</span><span class="co">   # derived</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">issues_html</span><span class="kw">:</span><span class="at">    </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> html</span><span class="kw">,</span><span class="at">     </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/Issues.html </span><span class="kw">}</span><span class="co">          # derived</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">issues_pdf</span><span class="kw">:</span><span class="at">     </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> pdf</span><span class="kw">,</span><span class="at">      </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/Issues.pdf </span><span class="kw">}</span><span class="co">           # derived</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">edges</span><span class="kw">:</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">  # bidirectional single-source-of-truth; DB wins when it is the sole dirty side</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> sync</span><span class="kw">,</span><span class="at"> </span><span class="fu">a</span><span class="kw">:</span><span class="at"> issues_md</span><span class="kw">,</span><span class="at"> </span><span class="fu">b</span><span class="kw">:</span><span class="at"> items_db</span><span class="kw">,</span><span class="at"> </span><span class="fu">authority</span><span class="kw">:</span><span class="at"> items_db</span><span class="kw">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">transform_a_to_b</span><span class="kw">:</span><span class="at"> md-to-db</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform_b_to_a</span><span class="kw">:</span><span class="at"> db-to-md </span><span class="kw">}</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">  # one-way derivations from the resolved markdown view</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> issues_md</span><span class="kw">,</span><span class="at">   </span><span class="fu">to</span><span class="kw">:</span><span class="at"> issues_summary</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> gen-issues-summary </span><span class="kw">}</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> issues_md</span><span class="kw">,</span><span class="at">   </span><span class="fu">to</span><span class="kw">:</span><span class="at"> issues_html</span><span class="kw">,</span><span class="at">    </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> md-to-html </span><span class="kw">}</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> issues_html</span><span class="kw">,</span><span class="at"> </span><span class="fu">to</span><span class="kw">:</span><span class="at"> issues_pdf</span><span class="kw">,</span><span class="at">     </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> html-to-pdf </span><span class="kw">}</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="fu">transforms</span><span class="kw">:</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">md-to-db</span><span class="kw">:</span><span class="at">           </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;scripts/testing/workable_items&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;sync&quot;</span><span class="kw">,</span><span class="at"> </span><span class="st">&quot;md-to-db&quot;</span><span class="kw">]</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">db-to-md</span><span class="kw">:</span><span class="at">           </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;scripts/testing/workable_items&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;sync&quot;</span><span class="kw">,</span><span class="at"> </span><span class="st">&quot;db-to-md&quot;</span><span class="kw">]</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">gen-issues-summary</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;scripts/testing/generate_issues_summary.sh&quot;</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">md-to-html</span><span class="kw">:</span><span class="at">         </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> pandoc-html </span><span class="kw">}</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">html-to-pdf</span><span class="kw">:</span><span class="at">        </span><span class="kw">{</span><span class="at"> </span><span class="fu">builtin</span><span class="kw">:</span><span class="at"> weasyprint-pdf </span><span class="kw">}</span></span></code></pre></div>
+<p>Conflict rule: if BOTH <code>issues_md</code> and
+<code>items_db</code> are dirty in one run, docs_chain emits a conflict
+(exit 2, no writes) per ARCHITECTURE §5.</p>
+<hr />
+<h2 id="8-validation-rules-summary">8. Validation rules summary</h2>
+<p>The loader (Phase 4) rejects a context (exit 4) when any holds:</p>
+<ol type="1">
+<li><code>context</code> is empty or missing.</li>
+<li>A node id is referenced by an edge but absent from
+<code>nodes</code>.</li>
+<li>A transform name is referenced by an edge but absent from
+<code>transforms</code>.</li>
+<li>A transform spec has neither <code>builtin</code> nor
+<code>exec</code> (or has both).</li>
+<li>A <code>fingerprint</code> node lacks <code>members</code>.</li>
+<li>A <code>sync</code> edge's <code>authority</code> is neither
+<code>a</code> nor <code>b</code>.</li>
+<li>The <code>derive-from</code> sub-graph contains a cycle (Kahn
+residual).</li>
+<li>Two nodes share the same id.</li>
+</ol>
+</body>
+</html>

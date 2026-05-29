@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>README</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<h1 id="docs_chain">docs_chain</h1>
+<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
+2026-05-29T08:59:39Z <strong>Status:</strong> Phase 1 core engine
+IMPLEMENTED + tested (<code>internal/hash</code> +
+<code>internal/graph</code> — <code>go test ./...</code> passes). Phases
+2–7 PLANNED per the plan. This README and the docs under
+<code>docs/</code> mark each capability IMPLEMENTED vs PLANNED and do
+not claim working behaviour that is not yet built (§11.4.6).
+<strong>Authority:</strong> Operator mandate 2026-05-29 (docs_chain
+initiative)</p>
+<hr />
+<p>docs_chain is a universal, Go-implemented, <strong>bidirectional
+document-and-database dependency-propagation engine</strong>. When any
+member of a registered chain changes — a Markdown source, an HTML/PDF
+export, or a SQLite database — docs_chain detects the change by
+<strong>content hash</strong> (not mtime) and propagates it through
+every connected member in every declared direction, regenerating and
+re-exporting atomically, so no tracked artefact can fall out of
+sync.</p>
+<p>It is the mechanical successor to the project's ad-hoc
+documentation-sync scripts. It ships as its own
+<code>vasic-digital</code> submodule and is consumed as a core part of
+the HelixConstitution submodule so any project adopts it out of the box
+and registers its own chains via per-context YAML.</p>
+<h2 id="model-in-one-line">Model in one line</h2>
+<p>Salsa-style content-hashed incremental recomputation over a DAG, with
+Kahn topological ordering, early-cutoff, declared-authority
+bidirectional <code>sync</code> edges, and atomic-rename +
+SQLite-transaction commit.</p>
+<h2 id="implementation-status">Implementation status</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Scope</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Research + design + this documentation</td>
+<td>Done (design artefacts)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Core DAG + content-hash engine</td>
+<td><strong>IMPLEMENTED + tested</strong> (<code>internal/hash</code>,
+<code>internal/graph</code>)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Node adapters + transforms</td>
+<td>PLANNED</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Propagation orchestrator + atomicity (filesystem/SQLite)</td>
+<td>PLANNED</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Config-driven multi-context + CLI/daemon</td>
+<td>PLANNED</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Comprehensive test suite (beyond the Phase 1 unit tests)</td>
+<td>PLANNED</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Constitution-submodule integration + repo creation</td>
+<td>PLANNED — OPERATOR-GATED</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ATMOSphere wiring + retire ad-hoc scripts</td>
+<td>PLANNED</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-is-implemented-today-go-test--passes">What is IMPLEMENTED
+today (<code>go test ./...</code> passes)</h3>
+<ul>
+<li><strong><code>internal/hash</code></strong> — <code>Hasher</code>
+interface + <code>ByteContentHasher</code> (LF normalization,
+trailing-whitespace strip, single trailing newline) so
+semantically-equivalent inputs collide by design; plus the sorted
+member-list fingerprint for roster/corpus sidecars (§11.4.86). Change
+detection is by <strong>content hash, never mtime</strong>.</li>
+<li><strong><code>internal/graph</code></strong> — the DAG
+(<code>Node</code>/<code>Edge</code>/<code>Graph</code>),
+<code>Validate</code> (cycle detection → <code>CycleError</code>),
+<code>TopoOrder</code> (deterministic Kahn ordering), and the recompute
+engine: <code>Recompute</code> (early-cutoff — unchanged inputs skip
+transform), <code>ResolveSync</code> (declared-authority bidirectional
+<code>sync</code> edges with <code>ConflictError</code>), and
+<code>CommitHashes</code>. An in-memory <code>Store</code>
+(<code>MemStore</code>) backs the unit tests.</li>
+</ul>
+<h3
+id="what-is-planned-not-yet-functional--do-not-assume-working-behaviour">What
+is PLANNED (NOT yet functional — do not assume working behaviour)</h3>
+<p>The <code>cmd/</code> CLI/daemon, on-disk node adapters
+(Markdown→HTML/PDF/DOCX transforms, SQLite store), the atomic-rename +
+SQLite-transaction commit layer, per-context YAML config loading, and
+the constitution-submodule integration are owned by Phases 2–7 and are
+NOT implemented in this repo yet. The <code>docs/</code> pages describe
+their DESIGNED contract.</p>
+<h2 id="documentation">Documentation</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="docs/ARCHITECTURE.md"><code>docs/ARCHITECTURE.md</code></a></td>
+<td>In-depth system architecture — DAG model, content-hash detection,
+early-cutoff, Kahn propagation, bidirectional sync authority +
+conflicts, atomicity/crash-safety, SQLite integration. Mermaid + ASCII
+diagrams.</td>
+</tr>
+<tr>
+<td><a
+href="docs/USER_GUIDE.md"><code>docs/USER_GUIDE.md</code></a></td>
+<td>End-to-end adoption guide — prerequisites, build, init
+<code>.docs_chain/</code>, define a context, run <code>sync</code>, the
+watch daemon, conflict resolution, CI integration.</td>
+</tr>
+<tr>
+<td><a
+href="docs/CONFIG_SCHEMA.md"><code>docs/CONFIG_SCHEMA.md</code></a></td>
+<td>Formal per-context YAML reference — every field, type, allowed
+values, defaults, validation rules; annotated <code>derive-from</code> +
+<code>sync</code> examples.</td>
+</tr>
+<tr>
+<td><a
+href="docs/USE_CASE_CATALOGUE.md"><code>docs/USE_CASE_CATALOGUE.md</code></a></td>
+<td>Living registry of 8 ready-to-use chain recipes (issues, fixed,
+status, roster/corpus, changelog, README doc-link, universal
+markdown-export, CONTINUATION).</td>
+</tr>
+<tr>
+<td><a
+href="docs/CONSTITUTION_INTEGRATION.md"><code>docs/CONSTITUTION_INTEGRATION.md</code></a></td>
+<td>How the constitution submodule makes docs_chain available to every
+consuming project — inheritance model, config discovery, the §11.4.x
+anchors it satisfies, what a project gets for free vs must
+register.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quick-start-phase-1-core-engine">Quick start (Phase 1 core
+engine)</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone git@github.com:vasic-digital/docs_chain.git</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> docs_chain</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> test ./...        <span class="co"># internal/hash + internal/graph — all green</span></span></code></pre></div>
+<p>The library API today is consumed programmatically (the
+<code>cmd/</code> CLI is Phase 4). Minimal use of the implemented
+core:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="op">(</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;digital.vasic.docs_chain/internal/graph&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;digital.vasic.docs_chain/internal/hash&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>g <span class="op">:=</span> graph<span class="op">.</span>New<span class="op">()</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// AddNode for each member, AddEdge for derive-from / sync relationships,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">// then g.Validate() (cycle check) and g.TopoOrder() (Kahn ordering).</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>res<span class="op">,</span> err <span class="op">:=</span> g<span class="op">.</span>Recompute<span class="op">(</span>store<span class="op">,</span> hash<span class="op">.</span>NewByteContentHasher<span class="op">(),</span> transforms<span class="op">)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">// res reports which targets changed (early-cutoff skips unchanged inputs);</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">// g.CommitHashes(res) persists the new content hashes.</span></span></code></pre></div>
+<p>See <a href="docs/USER_GUIDE.md"><code>docs/USER_GUIDE.md</code></a>
+for the full DESIGNED workflow and <a
+href="docs/CONFIG_SCHEMA.md"><code>docs/CONFIG_SCHEMA.md</code></a> for
+the per-context YAML contract.</p>
+<h2 id="license">License</h2>
+<p>Part of the <code>vasic-digital</code> toolkit. Distributed under the
+same terms as the surrounding <code>vasic-digital</code> /
+HelixConstitution submodule family.</p>
+<h2 id="design-provenance">Design provenance</h2>
+<p>The authoritative Phase-0 design (DESIGN / RESEARCH / PLAN) lives in
+the consuming project's research tree at
+<code>docs/research/docs_chain/</code> and is mirrored into the
+consuming project, not into this standalone repo. The <code>docs/</code>
+pages here are the self-contained, comprehensive specification of the
+DESIGNED system.</p>
+</body>
+</html>

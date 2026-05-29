@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>ARCHITECTURE</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<h1 id="docs_chain--system-architecture">docs_chain — System
+Architecture</h1>
+<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
+2026-05-29T00:00:00Z <strong>Status:</strong> Design documentation — see
+per-section status tags (IMPLEMENTED vs PLANNED (Phase N))
+<strong>Authority:</strong> Operator mandate 2026-05-29 (docs_chain
+initiative) <strong>Design provenance:</strong> authoritative Phase-0
+DESIGN / RESEARCH / PLAN live in the consuming project research tree
+(<code>docs/research/docs_chain/</code>); this document is the
+self-contained specification.</p>
+<hr />
+<h2 id="status-legend">Status legend</h2>
+<p>Per the anti-bluff no-guessing mandate (§11.4.6), every architectural
+component below carries an explicit implementation-status tag:</p>
+<ul>
+<li><strong>IMPLEMENTED</strong> — code exists in
+<code>docs_chain/*.go</code> and behaves as described.</li>
+<li><strong>PLANNED (Phase N)</strong> — designed in the Phase 0
+artefacts, scheduled for Phase N of <code>PLAN.md</code>, NOT yet
+built.</li>
+</ul>
+<p>At the time of writing, the Go package tree under
+<code>docs_chain/</code> contains only <code>go.mod</code> and an
+<code>internal/</code> scaffold (Phase 1 owns the engine). Therefore
+<strong>every behavioural component in this document is PLANNED</strong>
+unless a future revision of this file marks it IMPLEMENTED. This
+document describes the DESIGNED system; it does not claim working
+behaviour that is not yet built.</p>
+<hr />
+<h2 id="1-what-docs_chain-is">1. What docs_chain is</h2>
+<p>docs_chain is a universal, Go-implemented, <strong>bidirectional
+document-and-database dependency-propagation engine</strong>. When any
+member of a registered chain changes — a Markdown source, an HTML/PDF
+export, or a SQLite database — docs_chain detects the change by
+<strong>content hash</strong> and propagates it through every connected
+member in every declared direction, regenerating and re-exporting as
+needed, so that no tracked artefact can fall out of sync.</p>
+<p>The engine is the mechanical successor to the project's ad-hoc sync
+scripts (<code>sync_issues_docs.sh</code>,
+<code>sync_all_markdown_exports.sh</code>,
+<code>generate_issues_summary.sh</code>,
+<code>generate_fixed_summary.sh</code>,
+<code>sync_asset_player_status.sh</code>, and siblings). It supersedes
+them without breaking them during migration: each script is wrapped as
+an <code>exec:</code> transform until its logic is migrated into a
+builtin (see §10).</p>
+<p>The recommended conceptual model (from <code>RESEARCH.md</code> §9)
+is <strong>Salsa-style content-hashed incremental recomputation over a
+DAG</strong>, with Kahn topological ordering, early-cutoff,
+declared-authority bidirectional edges, and atomic-rename +
+SQLite-transaction commit.</p>
+<hr />
+<h2 id="2-the-dag-model">2. The DAG model</h2>
+<p><strong>Status: PLANNED (Phase 1 — graph; Phase 2 — node
+adapters).</strong></p>
+<p>A <strong>context</strong> owns one or more <strong>chains</strong>.
+A chain is a directed graph of <strong>nodes</strong> connected by
+<strong>edges</strong>.</p>
+<h3 id="21-node-kinds">2.1 Node kinds</h3>
+<p>Each node kind is a typed adapter (DESIGN §6). A node stores its
+last-known content hash in the chain state file.</p>
+<table>
+<thead>
+<tr>
+<th>Node kind</th>
+<th>Role</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>markdown</code></td>
+<td>canonical <code>.md</code> source</td>
+<td>input node (Salsa "square")</td>
+</tr>
+<tr>
+<td><code>html</code></td>
+<td>pandoc-derived export</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>pdf</code></td>
+<td>weasyprint-derived export</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>sqlite</code></td>
+<td>a database</td>
+<td>input AND derived (bidirectional)</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td>generated Markdown digest</td>
+<td>e.g. <code>Issues_Summary.md</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>§11.4.45 status doc</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>status_summary</code></td>
+<td>§11.4.56 two-audience digest</td>
+<td>derived</td>
+</tr>
+<tr>
+<td><code>fingerprint</code></td>
+<td>roster/corpus sidecar</td>
+<td>§11.4.86 member-list hash</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-edge-kinds">2.2 Edge kinds</h3>
+<ul>
+<li><strong><code>derive-from</code></strong> (one-way): the target is
+regenerated from one or more sources via a transform. Examples:
+<code>html ← markdown</code>, <code>pdf ← html</code>,
+<code>summary ← markdown</code>.</li>
+<li><strong><code>sync</code></strong> (bidirectional): two nodes are
+mutually authoritative views of the same data. Example:
+<code>markdown ↔︎ sqlite</code> (§11.4.93). A <code>sync</code> edge is
+NOT a literal 2-cycle; it is a <strong>paired relation with a declared
+<code>authority</code> plus two transforms</strong> (<code>md→db</code>
+and <code>db→md</code>). See §5.</li>
+</ul>
+<h3 id="23-dag-example-mermaid">2.3 DAG example (Mermaid)</h3>
+<p>The canonical issues chain (§11.4.93 / §11.4.12):</p>
+<pre class="mermaid"><code>graph LR
+    DB[(workable_items.db&lt;br/&gt;sqlite)]
+    MD[Issues.md&lt;br/&gt;markdown]
+    SUM[Issues_Summary.md&lt;br/&gt;summary]
+    HTML[Issues.html&lt;br/&gt;html]
+    PDF[Issues.pdf&lt;br/&gt;pdf]
+
+    DB &lt;--&gt;|sync&lt;br/&gt;authority: db| MD
+    MD --&gt;|derive-from&lt;br/&gt;gen-issues-summary| SUM
+    MD --&gt;|derive-from&lt;br/&gt;md-to-html| HTML
+    HTML --&gt;|derive-from&lt;br/&gt;html-to-pdf| PDF
+    SUM --&gt;|derive-from&lt;br/&gt;md-to-html| SUMHTML[Issues_Summary.html&lt;br/&gt;html]
+    SUMHTML --&gt;|derive-from&lt;br/&gt;html-to-pdf| SUMPDF[Issues_Summary.pdf&lt;br/&gt;pdf]</code></pre>
+<h3 id="24-dag-example-ascii">2.4 DAG example (ASCII)</h3>
+<pre><code>                    sync (authority: db)
+   workable_items.db &lt;==================&gt; Issues.md
+   (sqlite, input+derived)               (markdown, input)
+                                              |
+                  +---------------------------+---------------------------+
+                  |                           |                           |
+          derive-from                 derive-from                 (state.json
+          gen-issues-summary          md-to-html                   records each
+                  |                           |                    node&#39;s hash)
+                  v                           v
+          Issues_Summary.md            Issues.html
+          (summary)                    (html)
+                  |                           |
+          derive-from md-to-html      derive-from html-to-pdf
+                  v                           v
+          Issues_Summary.html          Issues.pdf
+                  |                          (pdf)
+          derive-from html-to-pdf
+                  v
+          Issues_Summary.pdf</code></pre>
+<hr />
+<h2 id="3-content-hash-change-detection-not-mtime">3. Content-hash
+change detection (NOT mtime)</h2>
+<p><strong>Status: PLANNED (Phase 1 —
+<code>internal/hash</code>).</strong></p>
+<p>Change detection keys on <strong>content hash</strong>, never on
+modification time. This directly encodes the §11.4.86 forensic lesson:
+<code>git checkout</code> resets mtime, so an mtime-based fingerprint
+silently misses real content drift and falsely flags unchanged files.
+Build-tooling practice (Bazel / Buck2 content-addressing,
+<code>RESEARCH.md</code> §3) corroborates the same choice.</p>
+<ul>
+<li>Per node: <code>sha256(canonicalised content)</code>.</li>
+<li>Per multi-member fingerprint node (roster/corpus):
+<code>sha256</code> of the <strong>sorted member list</strong> — the
+existing §11.4.86 pattern.</li>
+<li>mtime is used ONLY as a cheap pre-filter to avoid re-reading
+unchanged files; it is never the authority.</li>
+</ul>
+<p>A node is <strong>dirty</strong> when its freshly-computed hash
+differs from the hash recorded in <code>state.json</code>.</p>
+<hr />
+<h2 id="4-early-cutoff-incremental-recompute">4. Early-cutoff
+incremental recompute</h2>
+<p><strong>Status: PLANNED (Phase 1 — early-cutoff prune; Phase 3 —
+orchestrator).</strong></p>
+<p>Early-cutoff is the load-bearing Salsa feature
+(<code>RESEARCH.md</code> §1). At every derived node:</p>
+<ol type="1">
+<li>Recompute the node from its sources via its transform.</li>
+<li>Hash the result.</li>
+<li>If the new hash equals the stored hash, <strong>prune the
+subtree</strong> — no downstream work, no write.</li>
+</ol>
+<p>This means <code>md → db → summary → html → pdf</code> does NOT
+cascade work when an edit is a no-op at a downstream layer (for example,
+a Markdown whitespace-only edit that the summary generator normalises
+away stops the chain at the summary node). Early-cutoff is also what
+prevents the bidirectional <code>md ↔︎ db</code> edge from oscillating
+(§5).</p>
+<hr />
+<h2 id="5-bidirectional-sync-edge-authority--conflict-semantics">5.
+Bidirectional sync-edge authority + conflict semantics</h2>
+<p><strong>Status: PLANNED (Phase 3 — sync-edge authority
+resolution).</strong></p>
+<p>A naïve <code>md ↔︎ db</code> edge is a 2-cycle that would loop
+forever. docs_chain resolves it with a declared-authority algorithm
+(DESIGN §3):</p>
+<ol type="1">
+<li>On a change event, hash ALL nodes and compare to stored hashes → the
+<strong>dirty set</strong>.</li>
+<li>For a <code>sync</code> pair, if <strong>exactly one</strong> side
+is dirty, that side is the <strong>source of truth for this
+run</strong>; the other side is regenerated from it via the appropriate
+transform (<code>md→db</code> or <code>db→md</code>).</li>
+<li>If <strong>both</strong> sides are dirty (a concurrent edit on each
+side), docs_chain <strong>stops and emits a conflict</strong> — exit
+non-zero, no writes. The operator resolves it (§11.4.66). No silent
+merge, no guessing (§11.4.6).</li>
+<li>After regenerating the non-authoritative side, its new hash is
+recorded. Because the hash now matches what the transform produced,
+<strong>early-cutoff</strong> prevents it from being re-flagged dirty on
+the next pass → no loop.</li>
+</ol>
+<p>The <code>authority:</code> field in the edge config (§7) names the
+default source of truth for a <code>sync</code> pair, used to
+disambiguate the "exactly one dirty" case where the dirty side equals
+the declared authority, and used in diagnostics.</p>
+<h3 id="51-bidirectional-mddb-sync-mermaid-sequence">5.1 Bidirectional
+md↔︎db sync (Mermaid sequence)</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as Operator / editor
+    participant DC as docs_chain sync
+    participant H as hash(all nodes)
+    participant R as sync resolver
+    participant T as transform
+    participant S as state.json
+
+    U-&gt;&gt;DC: edit Issues.md (md dirty)
+    DC-&gt;&gt;H: compute hashes
+    H--&gt;&gt;DC: dirty = {Issues.md}
+    DC-&gt;&gt;R: resolve sync pair (md, db)
+    Note over R: exactly one dirty (md)&lt;br/&gt;md is source of truth
+    R-&gt;&gt;T: md→db transform
+    T--&gt;&gt;R: workable_items.db regenerated
+    R-&gt;&gt;H: re-hash db
+    Note over R: db hash now matches transform output&lt;br/&gt;early-cutoff: db not re-flagged
+    DC-&gt;&gt;T: derive-from md→summary→html→pdf
+    DC-&gt;&gt;S: record new hashes (atomic commit)</code></pre>
+<h3 id="52-both-dirty-conflict-ascii">5.2 Both-dirty conflict
+(ASCII)</h3>
+<pre><code>   edit A on Issues.md          edit B on workable_items.db
+            \                            /
+             v                          v
+        dirty = { Issues.md , workable_items.db }
+                          |
+                  sync resolver: BOTH dirty
+                          |
+                          v
+            CONFLICT  -&gt;  exit 2, ZERO writes
+            (operator resolves per §11.4.66;
+             no silent merge, no guess per §11.4.6)</code></pre>
+<hr />
+<h2 id="6-kahn-topological-propagation">6. Kahn topological
+propagation</h2>
+<p><strong>Status: PLANNED (Phase 1 — Kahn topo-sort + cycle
+detection).</strong></p>
+<p>Propagation runs in deterministic topological order using Kahn's
+algorithm (<code>RESEARCH.md</code> §5):</p>
+<ul>
+<li>The <strong><code>derive-from</code> sub-graph MUST be
+acyclic.</strong> docs_chain runs Kahn's algorithm at load; any residual
+nodes (a cycle) ⇒ config error and the engine refuses to run (exit
+4).</li>
+<li><strong><code>sync</code> pairs are collapsed to their
+authority</strong> before the topo-sort, so the effective propagation
+graph is always a DAG.</li>
+<li>After the authority of each <code>sync</code> pair is resolved (§5),
+<code>derive-from</code> edges run from that authority outward
+(<code>md → summary → html → pdf</code>).</li>
+</ul>
+<h3 id="61-loop--cycle-prevention-defence-in-depth">6.1 Loop / cycle
+prevention (defence in depth)</h3>
+<ol type="1">
+<li><strong>Load-time Kahn check</strong> — a cycle in
+<code>derive-from</code> ⇒ refuse to run.</li>
+<li><strong><code>sync</code> collapse</strong> — bidirectional edges
+never enter the topo-sort as cycles.</li>
+<li><strong>Early-cutoff</strong> (§4) — prevents <code>md↔︎db</code>
+oscillation.</li>
+<li><strong>Per-run visited-set + max-iteration guard</strong> —
+belt-and-suspenders against any unexpected oscillation: fail loudly,
+never spin.</li>
+</ol>
+<hr />
+<h2 id="7-propagation-flow-overview-mermaid">7. Propagation-flow
+overview (Mermaid)</h2>
+<pre class="mermaid"><code>flowchart TD
+    START([docs_chain sync context]) --&gt; LOAD[Load context YAML&lt;br/&gt;build graph]
+    LOAD --&gt; KAHN{Kahn cycle&lt;br/&gt;check on&lt;br/&gt;derive-from?}
+    KAHN --&gt;|cycle| ERR4([exit 4: config error])
+    KAHN --&gt;|acyclic| HASH[Hash ALL nodes&lt;br/&gt;vs state.json]
+    HASH --&gt; DIRTY{Any dirty?}
+    DIRTY --&gt;|none| EXIT0OK([exit 0: in-sync])
+    DIRTY --&gt;|yes| SYNC{sync pair&lt;br/&gt;both dirty?}
+    SYNC --&gt;|both| ERR2([exit 2: conflict&lt;br/&gt;no writes])
+    SYNC --&gt;|one or none| AUTH[Resolve sync authority&lt;br/&gt;regenerate other side]
+    AUTH --&gt; TOPO[Kahn topo order&lt;br/&gt;from authority outward]
+    TOPO --&gt; RECOMP[Recompute derived node]
+    RECOMP --&gt; CUT{Hash changed&lt;br/&gt;vs stored?}
+    CUT --&gt;|no| PRUNE[Early-cutoff:&lt;br/&gt;prune subtree]
+    CUT --&gt;|yes| STAGE[Stage temp artefact]
+    PRUNE --&gt; MORE{More nodes?}
+    STAGE --&gt; MORE
+    MORE --&gt;|yes| RECOMP
+    MORE --&gt;|no| COMMIT[Atomic commit:&lt;br/&gt;rename temps + DB txn + state.json]
+    COMMIT --&gt; EXIT0([exit 0: applied])
+    RECOMP --&gt;|transform error| ERR3([exit 3: rollback,&lt;br/&gt;no live changes])</code></pre>
+<hr />
+<h2 id="8-atomicity--crash-safety-composes-with-92">8. Atomicity &amp;
+crash-safety (composes with §9.2)</h2>
+<p><strong>Status: PLANNED (Phase 3 — staging + atomic-rename commit +
+rollback).</strong></p>
+<p>A propagation run is all-or-nothing (DESIGN §5,
+<code>RESEARCH.md</code> §6):</p>
+<ul>
+<li>Each derived artefact is written to
+<code>&lt;file&gt;.docs_chain.tmp</code> in the same directory, then
+<code>fsync</code>'d.</li>
+<li>SQLite mutations run inside <strong>one</strong> transaction;
+<code>wal_checkpoint(TRUNCATE)</code> runs before commit (§11.4.95), so
+the transient <code>.db-wal</code> / <code>.db-shm</code> sidecars are
+safely discardable.</li>
+<li><strong>Commit phase</strong>: atomic <code>rename(2)</code> of
+every staged temp over its live artefact, then commit the SQLite
+transaction, then write <code>state.json</code>.</li>
+<li><strong>Rollback</strong>: any error before commit ⇒ delete all
+temps, abort the transaction, and leave every live artefact and the DB
+byte-identical to the pre-run state. Exit 3.</li>
+<li>For destructive contexts an optional pre-run hardlinked
+<code>.git</code> backup hook composes with the §9.2 zero-risk
+data-safety protocol.</li>
+</ul>
+<p>Crash-safety claim verified by the Phase 3 / Phase 5 chaos tests
+(§11.4.85): SIGKILL mid-commit leaves live artefacts byte-identical to
+the pre-run snapshot (<code>recovery_trace.log</code> is the captured
+evidence).</p>
+<hr />
+<h2 id="9-sqlite-node-integration-11493">9. SQLite-node integration
+(§11.4.93)</h2>
+<p><strong>Status: PLANNED (Phase 2 — sqlite↔︎md pluggable transform;
+Phase 3 — txn/WAL commit).</strong></p>
+<p>The <code>sqlite</code> node is the bidirectional pivot of the
+§11.4.93 single source of truth (<code>docs/workable_items.db</code>,
+tracked in git per §11.4.95). Two pluggable transforms bind it to its
+Markdown view:</p>
+<ul>
+<li><code>md→sqlite</code> — parse Markdown trackers into DB rows.</li>
+<li><code>sqlite→md</code> — regenerate the Markdown trackers from DB
+rows.</li>
+</ul>
+<p>During migration both transforms shell out to the existing §11.4.93
+<code>workable-items</code> Go binary (DESIGN §6) so there is zero
+rewrite risk. The DB participates in the same atomic-commit phase as the
+file artefacts (§8): the transaction is committed only after every
+staged file rename succeeds, so a partial run never leaves the DB ahead
+of (or behind) the Markdown.</p>
+<h3 id="91-multi-context-overview-mermaid">9.1 Multi-context overview
+(Mermaid)</h3>
+<p>A consuming project registers several independent contexts; each is a
+self-contained chain and <code>docs_chain sync &lt;context&gt;</code>
+touches only that context's nodes.</p>
+<pre class="mermaid"><code>graph TB
+    subgraph issues[context: issues]
+        I_DB[(workable_items.db)] &lt;--&gt; I_MD[Issues.md]
+        I_MD --&gt; I_SUM[Issues_Summary.md] --&gt; I_EXP[html + pdf]
+        I_MD --&gt; I_EXP2[html + pdf]
+    end
+    subgraph fixed[context: fixed]
+        F_MD[Fixed.md] --&gt; F_SUM[Fixed_Summary.md] --&gt; F_EXP[html + pdf]
+        F_MD --&gt; F_EXP2[html + pdf]
+    end
+    subgraph status[context: status]
+        S_MD[Status.md] --&gt; S_SUM[Status_Summary.md] --&gt; S_EXP[html + pdf]
+    end
+    subgraph asset[context: asset_player]
+        A_FP[roster fingerprint] --&gt; A_ST[players/Status.md] --&gt; A_EXP[html + pdf]
+    end
+    CLI{{docs_chain sync --all}} --&gt; issues
+    CLI --&gt; fixed
+    CLI --&gt; status
+    CLI --&gt; asset</code></pre>
+<h3 id="92-multi-context-overview-ascii">9.2 Multi-context overview
+(ASCII)</h3>
+<pre><code>   docs_chain sync --all
+     |
+     +-- context: issues        -&gt; workable_items.db &lt;-&gt; Issues.md -&gt; summary -&gt; html/pdf
+     +-- context: fixed         -&gt; Fixed.md -&gt; Fixed_Summary.md -&gt; html/pdf
+     +-- context: status        -&gt; Status.md -&gt; Status_Summary.md -&gt; html/pdf
+     +-- context: asset_player  -&gt; roster fingerprint -&gt; players/Status.md -&gt; html/pdf
+     |
+   each context is independent; `sync issues` touches ONLY the issues chain.</code></pre>
+<hr />
+<h2 id="10-supersession-without-breakage-migration-model">10.
+Supersession without breakage (migration model)</h2>
+<p><strong>Status: PLANNED (Phase 7 — ATMOSphere wiring + retire ad-hoc
+scripts).</strong></p>
+<p>Each ad-hoc sync script is wrapped as an <code>exec:</code> transform
+(DESIGN §8). Phase 7 registers the ATMOSphere contexts pointing at the
+EXISTING scripts: behaviour is identical, but now orchestrated,
+content-hashed, atomic, and conflict-aware. Once a context is green for
+N cycles, the script's internal re-export / parity logic migrates into
+docs_chain builtins and the script retires to a thin shim that calls
+<code>docs_chain sync &lt;context&gt;</code>.</p>
+<p>See <a
+href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a> for
+the full script-to-context supersession table.</p>
+<hr />
+<h2 id="11-go-package-layout">11. Go package layout</h2>
+<p><strong>Status: PLANNED (Phases 1–4).</strong></p>
+<pre><code>docs_chain/
+  cmd/docs_chain/main.go     # CLI: sync | watch | verify | graph | doctor
+  internal/graph/            # DAG, Kahn topo-sort, cycle detect, early-cutoff
+  internal/hash/             # sha256 canonical content + member-list fingerprint
+  internal/node/             # node kinds + adapters (uses vasic-digital/Document)
+  internal/transform/        # builtin + exec transforms
+  internal/orchestrator/     # dirty-set, sync-resolution, staging, atomic commit, rollback
+  internal/config/           # YAML context loader + validation
+  internal/watch/            # fsnotify daemon (uses vasic-digital/Watcher)
+  internal/state/            # state.json read/write (§11.4.77 regen)</code></pre>
+<p>The engine reuses three catalogued <code>vasic-digital</code> modules
+(<code>RESEARCH.md</code> §8): <code>Document</code> (node-content
+abstraction), <code>Watcher</code> (watch daemon), and <code>Lazy</code>
+(memoised node evaluation). No existing dependency-graph /
+incremental-propagation engine was found, so the engine itself is
+original work extending those three modules (§11.4.8).</p>
+<hr />
+<h2 id="12-cli--daemon-interface">12. CLI / daemon interface</h2>
+<p><strong>Status: PLANNED (Phase 4 — CLI/daemon).</strong></p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Behaviour</th>
+<th>Exit codes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs_chain sync &lt;context&gt;</code></td>
+<td>one-shot: detect dirty, resolve, propagate atomically, update
+state</td>
+<td>0 in-sync/applied · 2 conflict · 3 transform-fail · 4
+cycle/config-error</td>
+</tr>
+<tr>
+<td><code>docs_chain sync --all</code></td>
+<td>every registered context</td>
+<td>as above</td>
+</tr>
+<tr>
+<td><code>docs_chain verify &lt;context&gt;</code></td>
+<td>read-only: report drift, write nothing (the pre-build-gate hook; the
+<code>--check-only</code> successor)</td>
+<td>0 in-sync · non-zero drift</td>
+</tr>
+<tr>
+<td><code>docs_chain watch [--context X]</code></td>
+<td>fsnotify daemon, debounced, runs <code>sync</code> on settle</td>
+<td>long-running</td>
+</tr>
+<tr>
+<td><code>docs_chain graph &lt;context&gt;</code></td>
+<td>emit the DAG (DOT/JSON) for audit</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>docs_chain doctor</code></td>
+<td>validate all contexts + state integrity</td>
+<td>0 healthy</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-anti-bluff-binding">13. Anti-bluff binding</h2>
+<p><strong>Status: PLANNED (Phase 5 — comprehensive test
+suite).</strong></p>
+<p>Every transform run captures evidence (input hashes, output hashes,
+rename log) into <code>qa-results/docs_chain/&lt;run-id&gt;/</code>
+(§11.4.69 derived- artefact feature class). <code>verify</code> is the
+deterministic (§11.4.50) sink-side check that a consuming project's
+pre-build gate invokes. The full four-layer test coverage per component
+(pre-build gate, packaging check, runtime/e2e test, paired §1.1
+meta-test mutation) is specified in <code>PLAN.md</code> Phase 5.</p>
+</body>
+</html>
