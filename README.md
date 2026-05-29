@@ -1,8 +1,8 @@
 # docs_chain
 
-**Revision:** 1
-**Last modified:** 2026-05-29T08:59:39Z
-**Status:** Phase 1 core engine IMPLEMENTED + tested (`internal/hash` + `internal/graph` — `go test ./...` passes). Phases 2–7 PLANNED per the plan. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
+**Revision:** 2
+**Last modified:** 2026-05-29T09:30:00Z
+**Status:** Docs Chain Phases 1–3 IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` — `go test ./...` passes). Phases 4–7 PLANNED per the plan. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
 **Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
 
 ---
@@ -32,10 +32,10 @@ Kahn topological ordering, early-cutoff, declared-authority bidirectional
 |-------|-------|--------|
 | 0 | Research + design + this documentation | Done (design artefacts) |
 | 1 | Core DAG + content-hash engine | **IMPLEMENTED + tested** (`internal/hash`, `internal/graph`) |
-| 2 | Node adapters + transforms | PLANNED |
-| 3 | Propagation orchestrator + atomicity (filesystem/SQLite) | PLANNED |
+| 2 | Node adapters + transforms | **IMPLEMENTED + tested** (`internal/adapter`) |
+| 3 | Propagation orchestrator + atomicity (filesystem/SQLite) | **IMPLEMENTED + tested** (`internal/orchestrator`) |
 | 4 | Config-driven multi-context + CLI/daemon | PLANNED |
-| 5 | Comprehensive test suite (beyond the Phase 1 unit tests) | PLANNED |
+| 5 | Comprehensive test suite (beyond the Phase 1–3 package tests) | PLANNED |
 | 6 | Constitution-submodule integration + repo creation | PLANNED — OPERATOR-GATED |
 | 7 | ATMOSphere wiring + retire ad-hoc scripts | PLANNED |
 
@@ -52,14 +52,35 @@ Kahn topological ordering, early-cutoff, declared-authority bidirectional
   unchanged inputs skip transform), `ResolveSync` (declared-authority
   bidirectional `sync` edges with `ConflictError`), and `CommitHashes`.
   An in-memory `Store` (`MemStore`) backs the unit tests.
+- **`internal/adapter`** (Phase 2) — node-content adapters backing real
+  stores: a `FileAdapter` for `markdown` (and the on-disk html/pdf/docx
+  outputs) with per-file atomic temp-then-rename writes; DERIVED transforms
+  that shell out to **pandoc** (`md→html`, `md→docx`) and **weasyprint**
+  (`html→pdf`) — when a tool is absent they return a typed
+  `ToolAbsentError` (`IsToolAbsent`) and never fake success; a `SQLiteAdapter`
+  (pure-Go `modernc.org/sqlite`, no cgo) whose hashed content is a
+  **canonical row dump** from a deterministic `ORDER BY` query — NOT the raw
+  `.db` page bytes — so identical row sets collide regardless of insert
+  order; and a `FileStore` implementing the Phase-1 `graph.Store` interface
+  on top of these adapters, so `graph.Recompute` runs unmodified against real
+  files and databases.
+- **`internal/orchestrator`** (Phase 3) — `Run` ties `graph.Recompute` to the
+  `FileStore` with three guarantees: **atomicity** (regenerated outputs are
+  staged in-memory and written only after the whole run succeeds; any
+  transform error rolls back with zero partial writes — composes with §9.2),
+  **cycle-guard** (refuses to run when `graph.Validate` reports a
+  `CycleError`, writing nothing), and **sync-conflict** surfacing
+  (`ConflictError` on a both-dirty sync pair, writing nothing). It returns the
+  `RecomputeResult` plus a committed / rolled-back / in-sync / conflict /
+  cycle `Status`. A staged intermediate feeds the next transform, so
+  multi-level chains (md→html→pdf) propagate in one pass.
 
 ### What is PLANNED (NOT yet functional — do not assume working behaviour)
 
-The `cmd/` CLI/daemon, on-disk node adapters (Markdown→HTML/PDF/DOCX
-transforms, SQLite store), the atomic-rename + SQLite-transaction commit
-layer, per-context YAML config loading, and the constitution-submodule
-integration are owned by Phases 2–7 and are NOT implemented in this repo
-yet. The `docs/` pages describe their DESIGNED contract.
+The `cmd/` CLI/daemon, per-context YAML config loading, the comprehensive
+beyond-package test suite, and the constitution-submodule integration are
+owned by Phases 4–7 and are NOT implemented in this repo yet. The `docs/`
+pages describe their DESIGNED contract.
 
 ## Documentation
 

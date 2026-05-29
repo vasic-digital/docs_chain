@@ -1,8 +1,8 @@
 # docs_chain — System Architecture
 
-**Revision:** 1
-**Last modified:** 2026-05-29T00:00:00Z
-**Status:** Design documentation — see per-section status tags (IMPLEMENTED vs PLANNED (Phase N))
+**Revision:** 2
+**Last modified:** 2026-05-29T09:30:00Z
+**Status:** Design documentation — see per-section status tags (IMPLEMENTED vs PLANNED (Phase N)). Phases 1–3 are now IMPLEMENTED + tested (`internal/{hash,graph,adapter,orchestrator}`); Phases 4–7 remain PLANNED.
 **Authority:** Operator mandate 2026-05-29 (docs_chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -19,12 +19,14 @@ component below carries an explicit implementation-status tag:
   for Phase N of `PLAN.md`, NOT
   yet built.
 
-At the time of writing, the Go package tree under `docs_chain/` contains
-only `go.mod` and an `internal/` scaffold (Phase 1 owns the engine).
-Therefore **every behavioural component in this document is PLANNED**
-unless a future revision of this file marks it IMPLEMENTED. This document
-describes the DESIGNED system; it does not claim working behaviour that
-is not yet built.
+As of Revision 2, the Go package tree under `internal/` implements Phases
+1–3: `internal/hash` + `internal/graph` (engine), `internal/adapter`
+(node adapters + transforms), and `internal/orchestrator` (atomic
+propagation). `go test ./...` passes. Components owned by Phases 4–7
+(the `cmd/` CLI/daemon, per-context YAML config, the beyond-package test
+suite, constitution-submodule integration) remain **PLANNED** and are
+tagged as such per section. This document describes the DESIGNED system
+and does not claim working behaviour that is not yet built (§11.4.6).
 
 ---
 
@@ -55,7 +57,8 @@ edges, and atomic-rename + SQLite-transaction commit.
 
 ## 2. The DAG model
 
-**Status: PLANNED (Phase 1 — graph; Phase 2 — node adapters).**
+**Status: IMPLEMENTED (Phase 1 — graph in `internal/graph`; Phase 2 —
+node adapters in `internal/adapter`).**
 
 A **context** owns one or more **chains**. A chain is a directed graph of
 **nodes** connected by **edges**.
@@ -179,7 +182,9 @@ bidirectional `md ↔ db` edge from oscillating (§5).
 
 ## 5. Bidirectional sync-edge authority + conflict semantics
 
-**Status: PLANNED (Phase 3 — sync-edge authority resolution).**
+**Status: IMPLEMENTED (Phase 1 — `graph.ResolveSync` authority/conflict
+detection; Phase 3 — `orchestrator.Run` surfaces `ConflictError` with zero
+writes).**
 
 A naïve `md ↔ db` edge is a 2-cycle that would loop forever. docs_chain
 resolves it with a declared-authority algorithm (DESIGN §3):
@@ -247,7 +252,9 @@ sequenceDiagram
 
 ## 6. Kahn topological propagation
 
-**Status: PLANNED (Phase 1 — Kahn topo-sort + cycle detection).**
+**Status: IMPLEMENTED (Phase 1 — Kahn topo-sort + cycle detection in
+`graph.TopoOrder` / `graph.Validate`; Phase 3 — `orchestrator.Run`
+cycle-guard).**
 
 Propagation runs in deterministic topological order using Kahn's
 algorithm (`RESEARCH.md` §5):
@@ -302,7 +309,10 @@ flowchart TD
 
 ## 8. Atomicity & crash-safety (composes with §9.2)
 
-**Status: PLANNED (Phase 3 — staging + atomic-rename commit + rollback).**
+**Status: IMPLEMENTED (Phase 3 — `orchestrator.Run` in-memory staging +
+withhold-until-success + per-file atomic temp-then-rename + rollback on any
+transform error). The optional pre-run hardlinked `.git` backup hook and
+the SIGKILL-mid-commit chaos verification remain PLANNED (Phase 5).**
 
 A propagation run is all-or-nothing (DESIGN §5,
 `RESEARCH.md` §6):
@@ -324,12 +334,32 @@ Crash-safety claim verified by the Phase 3 / Phase 5 chaos tests
 (§11.4.85): SIGKILL mid-commit leaves live artefacts byte-identical to
 the pre-run snapshot (`recovery_trace.log` is the captured evidence).
 
+**As-built (Revision 2, Phase 3 — IMPLEMENTED).** `orchestrator.Run`
+implements the staging + withhold + rollback contract: every regenerated
+output is buffered in-memory and live files are touched only after the
+recompute fully succeeds; any transform error returns
+`Status: rolled-back` with zero files written (verified by
+`TestRun_TransformError_RollsBack`). Each `FileAdapter.Write` is itself
+atomic (temp-file + `Sync` + `rename`). The `SQLiteAdapter.Write` runs its
+mutation inside a single `database/sql` transaction (committed or rolled
+back as a unit). What remains PLANNED (Phase 5): the unified
+cross-artefact commit phase that interleaves the SQLite transaction
+`Commit` *between* the file renames and a `state.json` write (the current
+build commits each adapter independently in deterministic order and
+reports a partial `Committed` list honestly if an OS-level write fails
+mid-drain), the `wal_checkpoint(TRUNCATE)` step, the `state.json`
+baseline persistence (Phase 3 keeps the baseline in-memory via
+`graph.CommitHashes`), and the SIGKILL-mid-commit chaos verification.
+
 ---
 
 ## 9. SQLite-node integration (§11.4.93)
 
-**Status: PLANNED (Phase 2 — sqlite↔md pluggable transform; Phase 3 —
-txn/WAL commit).**
+**Status: IMPLEMENTED (Phase 2 — `adapter.SQLiteAdapter`: canonical
+row-dump content for hashing + transaction-wrapped `Apply` for the md→db
+write side, pure-Go `modernc.org/sqlite`, no cgo). The unified
+cross-artefact WAL-checkpoint commit phase remains PLANNED (Phase 5,
+see §8 as-built).**
 
 The `sqlite` node is the bidirectional pivot of the §11.4.93 single
 source of truth (`docs/workable_items.db`, tracked in git per §11.4.95).
@@ -339,11 +369,19 @@ Two pluggable transforms bind it to its Markdown view:
 - `sqlite→md` — regenerate the Markdown trackers from DB rows.
 
 During migration both transforms shell out to the existing §11.4.93
-`workable-items` Go binary (DESIGN §6) so there is zero rewrite risk. The
-DB participates in the same atomic-commit phase as the file artefacts
-(§8): the transaction is committed only after every staged file rename
-succeeds, so a partial run never leaves the DB ahead of (or behind) the
-Markdown.
+`workable-items` Go binary (DESIGN §6) so there is zero rewrite risk.
+
+**As-built (Revision 2).** The `SQLiteAdapter` hashes a **canonical dump**
+of a caller-supplied deterministic `ORDER BY` query — NOT the raw `.db`
+page bytes — so logically-identical databases collide regardless of
+insertion order or WAL/page noise (verified by
+`TestSQLiteAdapter_CanonicalDumpDeterminism`). The write side runs the
+caller's `Apply` mutation inside one `database/sql` transaction
+(`TestSQLiteAdapter_WriteApplyTransaction`); a node with no `Apply` func
+is read-only and rejects `Write`. The `DumpQuery` (the documented query
+hook) is mandatory. The cross-artefact commit ordering between the DB
+transaction and the file renames is owned by the Phase-5 unified commit
+phase (§8 as-built); the current build commits each adapter independently.
 
 ### 9.1 Multi-context overview (Mermaid)
 

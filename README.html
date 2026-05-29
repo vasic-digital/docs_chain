@@ -238,11 +238,12 @@
 </head>
 <body>
 <h1 id="docs_chain">docs_chain</h1>
-<p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
-2026-05-29T08:59:39Z <strong>Status:</strong> Phase 1 core engine
+<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
+2026-05-29T09:30:00Z <strong>Status:</strong> Docs Chain Phases 1–3
 IMPLEMENTED + tested (<code>internal/hash</code> +
-<code>internal/graph</code> — <code>go test ./...</code> passes). Phases
-2–7 PLANNED per the plan. This README and the docs under
+<code>internal/graph</code> + <code>internal/adapter</code> +
+<code>internal/orchestrator</code> — <code>go test ./...</code> passes).
+Phases 4–7 PLANNED per the plan. This README and the docs under
 <code>docs/</code> mark each capability IMPLEMENTED vs PLANNED and do
 not claim working behaviour that is not yet built (§11.4.6).
 <strong>Authority:</strong> Operator mandate 2026-05-29 (docs_chain
@@ -256,7 +257,7 @@ export, or a SQLite database — docs_chain detects the change by
 every connected member in every declared direction, regenerating and
 re-exporting atomically, so no tracked artefact can fall out of
 sync.</p>
-<p>It is the mechanical successor to the project's ad-hoc
+<p>It is the mechanical successor to the project’s ad-hoc
 documentation-sync scripts. It ships as its own
 <code>vasic-digital</code> submodule and is consumed as a core part of
 the HelixConstitution submodule so any project adopts it out of the box
@@ -268,6 +269,11 @@ bidirectional <code>sync</code> edges, and atomic-rename +
 SQLite-transaction commit.</p>
 <h2 id="implementation-status">Implementation status</h2>
 <table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 31%" />
+<col style="width: 36%" />
+</colgroup>
 <thead>
 <tr>
 <th>Phase</th>
@@ -290,12 +296,14 @@ SQLite-transaction commit.</p>
 <tr>
 <td>2</td>
 <td>Node adapters + transforms</td>
-<td>PLANNED</td>
+<td><strong>IMPLEMENTED + tested</strong>
+(<code>internal/adapter</code>)</td>
 </tr>
 <tr>
 <td>3</td>
 <td>Propagation orchestrator + atomicity (filesystem/SQLite)</td>
-<td>PLANNED</td>
+<td><strong>IMPLEMENTED + tested</strong>
+(<code>internal/orchestrator</code>)</td>
 </tr>
 <tr>
 <td>4</td>
@@ -304,7 +312,7 @@ SQLite-transaction commit.</p>
 </tr>
 <tr>
 <td>5</td>
-<td>Comprehensive test suite (beyond the Phase 1 unit tests)</td>
+<td>Comprehensive test suite (beyond the Phase 1–3 package tests)</td>
 <td>PLANNED</td>
 </tr>
 <tr>
@@ -319,8 +327,8 @@ SQLite-transaction commit.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="what-is-implemented-today-go-test--passes">What is IMPLEMENTED
-today (<code>go test ./...</code> passes)</h3>
+<h3 id="what-is-implemented-today-go-test-....-passes">What is
+IMPLEMENTED today (<code>go test ./...</code> passes)</h3>
 <ul>
 <li><strong><code>internal/hash</code></strong> — <code>Hasher</code>
 interface + <code>ByteContentHasher</code> (LF normalization,
@@ -337,18 +345,50 @@ transform), <code>ResolveSync</code> (declared-authority bidirectional
 <code>sync</code> edges with <code>ConflictError</code>), and
 <code>CommitHashes</code>. An in-memory <code>Store</code>
 (<code>MemStore</code>) backs the unit tests.</li>
+<li><strong><code>internal/adapter</code></strong> (Phase 2) —
+node-content adapters backing real stores: a <code>FileAdapter</code>
+for <code>markdown</code> (and the on-disk html/pdf/docx outputs) with
+per-file atomic temp-then-rename writes; DERIVED transforms that shell
+out to <strong>pandoc</strong> (<code>md→html</code>,
+<code>md→docx</code>) and <strong>weasyprint</strong>
+(<code>html→pdf</code>) — when a tool is absent they return a typed
+<code>ToolAbsentError</code> (<code>IsToolAbsent</code>) and never fake
+success; a <code>SQLiteAdapter</code> (pure-Go
+<code>modernc.org/sqlite</code>, no cgo) whose hashed content is a
+<strong>canonical row dump</strong> from a deterministic
+<code>ORDER BY</code> query — NOT the raw <code>.db</code> page bytes —
+so identical row sets collide regardless of insert order; and a
+<code>FileStore</code> implementing the Phase-1 <code>graph.Store</code>
+interface on top of these adapters, so <code>graph.Recompute</code> runs
+unmodified against real files and databases.</li>
+<li><strong><code>internal/orchestrator</code></strong> (Phase 3) —
+<code>Run</code> ties <code>graph.Recompute</code> to the
+<code>FileStore</code> with three guarantees: <strong>atomicity</strong>
+(regenerated outputs are staged in-memory and written only after the
+whole run succeeds; any transform error rolls back with zero partial
+writes — composes with §9.2), <strong>cycle-guard</strong> (refuses to
+run when <code>graph.Validate</code> reports a <code>CycleError</code>,
+writing nothing), and <strong>sync-conflict</strong> surfacing
+(<code>ConflictError</code> on a both-dirty sync pair, writing nothing).
+It returns the <code>RecomputeResult</code> plus a committed /
+rolled-back / in-sync / conflict / cycle <code>Status</code>. A staged
+intermediate feeds the next transform, so multi-level chains
+(md→html→pdf) propagate in one pass.</li>
 </ul>
 <h3
-id="what-is-planned-not-yet-functional--do-not-assume-working-behaviour">What
+id="what-is-planned-not-yet-functional-do-not-assume-working-behaviour">What
 is PLANNED (NOT yet functional — do not assume working behaviour)</h3>
-<p>The <code>cmd/</code> CLI/daemon, on-disk node adapters
-(Markdown→HTML/PDF/DOCX transforms, SQLite store), the atomic-rename +
-SQLite-transaction commit layer, per-context YAML config loading, and
-the constitution-submodule integration are owned by Phases 2–7 and are
-NOT implemented in this repo yet. The <code>docs/</code> pages describe
+<p>The <code>cmd/</code> CLI/daemon, per-context YAML config loading,
+the comprehensive beyond-package test suite, and the
+constitution-submodule integration are owned by Phases 4–7 and are NOT
+implemented in this repo yet. The <code>docs/</code> pages describe
 their DESIGNED contract.</p>
 <h2 id="documentation">Documentation</h2>
 <table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
 <thead>
 <tr>
 <th>Document</th>
@@ -425,7 +465,7 @@ same terms as the surrounding <code>vasic-digital</code> /
 HelixConstitution submodule family.</p>
 <h2 id="design-provenance">Design provenance</h2>
 <p>The authoritative Phase-0 design (DESIGN / RESEARCH / PLAN) lives in
-the consuming project's research tree at
+the consuming project’s research tree at
 <code>docs/research/docs_chain/</code> and is mirrored into the
 consuming project, not into this standalone repo. The <code>docs/</code>
 pages here are the self-contained, comprehensive specification of the

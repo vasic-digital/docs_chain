@@ -21,6 +21,7 @@ const (
 	KindMarkdown      NodeKind = "markdown"
 	KindHTML          NodeKind = "html"
 	KindPDF           NodeKind = "pdf"
+	KindDOCX          NodeKind = "docx"
 	KindSQLite        NodeKind = "sqlite"
 	KindSummary       NodeKind = "summary"
 	KindStatus        NodeKind = "status"
