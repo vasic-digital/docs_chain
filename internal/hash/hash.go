@@ -69,6 +69,34 @@ func (h ByteContentHasher) Hash(content []byte) string {
 	return sum(h.Normalize(content))
 }
 
+// RawByteHasher is the Hasher for BINARY node kinds (pdf, docx, and any other
+// non-text payload). Its Normalize is the IDENTITY — it hashes the raw bytes
+// verbatim, with NO line-ending / trailing-whitespace / trailing-newline
+// canonicalization.
+//
+// BUG FIX (binary-hash verify defect): the default ByteContentHasher applies a
+// text normalizer (CRLF→LF, trailing-whitespace strip, single trailing
+// newline). Run over a binary container (a docx zip, a pdf), that normalizer
+// REWRITES bytes — e.g. it stripped a trailing 0x0A and collapsed CR/LF byte
+// sequences inside the compressed streams, shortening a docx by 1 byte and a
+// pdf by ~7 bytes. The normalization is itself deterministic, but applying a
+// text transform to binary content is semantically wrong: it can mask a real
+// change or, combined with non-reproducible producer output, make the
+// sync-record path and the verify-check path disagree about a node's identity.
+// Binary kinds MUST be hashed by their raw bytes, identically, in BOTH the
+// sync-record path (graph.Recompute) and the verify-check path (runner.Verify).
+// RawByteHasher is that hasher; the runner now selects it for pdf/docx.
+type RawByteHasher struct{}
+
+// NewRawByteHasher returns the identity (raw-bytes) hasher for binary kinds.
+func NewRawByteHasher() RawByteHasher { return RawByteHasher{} }
+
+// Normalize is the identity for raw binary content (no canonicalization).
+func (RawByteHasher) Normalize(content []byte) []byte { return content }
+
+// Hash returns the sha256 of the raw bytes, verbatim.
+func (RawByteHasher) Hash(content []byte) string { return sum(content) }
+
 // FingerprintMembers returns a drift-proof sha256 over the SORTED member
 // list (§11.4.86). Order of the input is irrelevant; the fingerprint is a
 // pure function of the SET of members. Each member is newline-joined after

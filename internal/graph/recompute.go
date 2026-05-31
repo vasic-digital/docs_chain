@@ -63,6 +63,40 @@ type Hasher interface {
 	Hash(content []byte) string
 }
 
+// PerNodeHasher is an OPTIONAL capability a Store may implement to supply a
+// per-node (per-kind) Hasher. When the store passed to Recompute implements
+// it, the engine hashes each node with ITS kind-specific hasher instead of the
+// single fallback Hasher.
+//
+// BUG FIX (binary-hash verify defect): binary kinds (pdf, docx) must be hashed
+// by raw bytes while text kinds (markdown, html) keep their text
+// normalization. Threading the per-node hasher here lets the SYNC-RECORD path
+// (this Recompute) and the VERIFY-CHECK path (runner.Verify) select the SAME
+// hasher per node — eliminating the inconsistency where one path normalized a
+// binary payload and the other did not. Stores that do not implement it (the
+// Phase-1 MemStore, the orchestrator's stagingStore wrapper) fall back to the
+// single Hasher, preserving existing behaviour.
+type PerNodeHasher interface {
+	// NodeHasher returns the Hasher for a node id. A nil error with a nil
+	// Hasher means "use the fallback".
+	NodeHasher(id string) (Hasher, error)
+}
+
+// hasherFor returns the per-node hasher for id when store supports it and
+// yields a non-nil hasher, else the fallback h.
+func hasherFor(store Store, h Hasher, id string) (Hasher, error) {
+	if pnh, ok := store.(PerNodeHasher); ok {
+		nh, err := pnh.NodeHasher(id)
+		if err != nil {
+			return nil, err
+		}
+		if nh != nil {
+			return nh, nil
+		}
+	}
+	return h, nil
+}
+
 // RecomputeResult is the deterministic record of one recompute run.
 type RecomputeResult struct {
 	// Dirty is the set of source nodes whose content changed (sorted).
@@ -164,7 +198,11 @@ func (g *Graph) Recompute(store Store, h Hasher, transforms map[string]Transform
 		if err != nil {
 			return nil, fmt.Errorf("graph: store.Get(%q): %w", id, err)
 		}
-		cur := h.Hash(content)
+		nh, herr := hasherFor(store, h, id)
+		if herr != nil {
+			return nil, fmt.Errorf("graph: hasher for %q: %w", id, herr)
+		}
+		cur := nh.Hash(content)
 		res.NewHashes[id] = cur
 		if cur != n.Hash {
 			dirty[id] = true
@@ -234,7 +272,11 @@ func (g *Graph) Recompute(store Store, h Hasher, transforms map[string]Transform
 		if terr != nil {
 			return nil, fmt.Errorf("graph: transform for %q failed: %w", id, terr)
 		}
-		newHash := h.Hash(out)
+		nh, herr := hasherFor(store, h, id)
+		if herr != nil {
+			return nil, fmt.Errorf("graph: hasher for %q: %w", id, herr)
+		}
+		newHash := nh.Hash(out)
 		if newHash == g.nodes[id].Hash {
 			// Early cutoff: output unchanged. Do NOT mark dirty; downstream
 			// is pruned.

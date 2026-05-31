@@ -362,6 +362,160 @@ transforms:
 	t.Logf("EVIDENCE: verify honest SKIP — %s", vr.ToolReason)
 }
 
+// TestVerify_BinaryNode_InSyncAfterSync is the regression pin for the
+// binary-hash verify defect: after `sync`, an immediate read-only `verify` of
+// a BINARY node kind (docx/pdf) MUST report in-sync (no stale) — proving the
+// sync-record path and the verify-check path hash the binary identically (raw
+// bytes, no text normalization) AND that the producer output is reproducible
+// across the sync→verify time gap.
+//
+// Before the fix, all docx nodes (and the timestamp/dir-sensitive pdf nodes)
+// were falsely flagged STALE immediately after a clean sync because (a) the
+// docx/pdf hashers text-normalized binary bytes, and (b) pandoc/weasyprint
+// embedded wall-clock timestamps + directory-relative URIs into the output, so
+// the verify re-derivation never byte-matched the committed artefact.
+//
+// Two layers, so the pin holds whether or not pandoc is on PATH:
+//   - real pandoc-docx derivation when pandoc is present (exercises the actual
+//     bug end-to-end);
+//   - a synthetic binary node via an exec transform whose output deliberately
+//     contains bytes a text-normalizer WOULD alter (CRLF, a NUL, trailing
+//     whitespace before a newline, a trailing newline). The docx adapter's
+//     RawByteHasher must hash those verbatim, identically in both paths.
+func TestVerify_BinaryNode_InSyncAfterSync(t *testing.T) {
+	t.Run("real_pandoc_docx", func(t *testing.T) {
+		if !haveTool("pandoc") {
+			t.Skip("pandoc absent — honest SKIP; the docx derivation needs pandoc")
+		}
+		root := t.TempDir()
+		mdPath := filepath.Join(root, "b.md")
+		if err := os.WriteFile(mdPath, []byte("# Binary\n\nDocx body **bold**.\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		yaml := `
+context: b
+nodes:
+  md:   { kind: markdown, path: b.md }
+  docx: { kind: docx,     path: b.docx }
+edges:
+  - { type: derive-from, from: md, to: docx, transform: m2d }
+transforms:
+  m2d: { builtin: pandoc-docx }
+`
+		c := writeContext(t, root, "b", yaml)
+		st := state.New()
+
+		prep, err := Prepare(c, root, st)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res, err := prep.RunSync(st)
+		if err != nil {
+			t.Fatalf("sync: %v", err)
+		}
+		if res.Status != orchestrator.StatusCommitted {
+			t.Fatalf("sync status = %s, want committed (err=%v)", res.Status, res.Err)
+		}
+		// Real evidence: a non-empty .docx (zip — starts with "PK") was written.
+		got, err := os.ReadFile(filepath.Join(root, "b.docx"))
+		if err != nil || len(got) == 0 {
+			t.Fatalf("docx not produced: %v (len=%d)", err, len(got))
+		}
+		if len(got) < 2 || got[0] != 'P' || got[1] != 'K' {
+			t.Fatalf("produced docx is not a zip container (first bytes %x)", got[:min(4, len(got))])
+		}
+
+		// THE PIN: verify immediately after sync must be in-sync (exit 0). Run
+		// it 3x to catch any timestamp/dir flapping.
+		for i := 0; i < 3; i++ {
+			prep2, err := Prepare(c, root, st)
+			if err != nil {
+				t.Fatal(err)
+			}
+			vr, err := prep2.Verify()
+			if err != nil {
+				t.Fatalf("verify iter %d: %v", i, err)
+			}
+			if len(vr.Stale) != 0 {
+				t.Fatalf("verify iter %d: docx falsely STALE %v — binary-hash regression", i, vr.Stale)
+			}
+		}
+		t.Logf("EVIDENCE: real pandoc docx (%d bytes) verifies in-sync 3x after sync", len(got))
+	})
+
+	t.Run("synthetic_binary", func(t *testing.T) {
+		root := t.TempDir()
+		srcPath := filepath.Join(root, "s.md")
+		if err := os.WriteFile(srcPath, []byte("seed\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		// emit.sh writes DETERMINISTIC synthetic binary bytes to its output ($2)
+		// containing exactly the sequences a text-normalizer would alter: a NUL,
+		// a CRLF, trailing spaces+tab before a newline, and a trailing newline.
+		// (It ignores its input so the output is fixed and self-cleaning.)
+		emit := filepath.Join(root, "emit.sh")
+		// printf octal escapes: \000 NUL, \015\012 CRLF, "x  \t\n", trailing \n.
+		script := "#!/bin/sh\nprintf 'A\\000B\\015\\012x  \\t\\nC\\n' > \"$2\"\n"
+		if err := os.WriteFile(emit, []byte(script), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		yaml := `
+context: s
+nodes:
+  src:  { kind: markdown, path: s.md }
+  blob: { kind: docx,     path: s.bin }
+edges:
+  - { type: derive-from, from: src, to: blob, transform: emit }
+transforms:
+  emit: { exec: "./emit.sh" }
+`
+		c := writeContext(t, root, "s", yaml)
+		st := state.New()
+
+		prep, err := Prepare(c, root, st)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res, err := prep.RunSync(st)
+		if err != nil {
+			t.Fatalf("sync: %v", err)
+		}
+		if res.Status != orchestrator.StatusCommitted {
+			t.Fatalf("sync status = %s, want committed (err=%v)", res.Status, res.Err)
+		}
+		// Confirm the on-disk bytes are the raw synthetic payload (a
+		// text-normalizer would have collapsed CRLF and stripped the trailing
+		// whitespace/newline — the raw bytes prove no such mangling on write).
+		want := []byte{'A', 0x00, 'B', '\r', '\n', 'x', ' ', ' ', '\t', '\n', 'C', '\n'}
+		got, err := os.ReadFile(filepath.Join(root, "s.bin"))
+		if err != nil {
+			t.Fatalf("blob not produced: %v", err)
+		}
+		if string(got) != string(want) {
+			t.Fatalf("on-disk blob = %x, want raw %x", got, want)
+		}
+
+		// THE PIN: verify must be in-sync (the docx adapter's RawByteHasher
+		// hashes these bytes verbatim in BOTH the record and check paths). A
+		// text-normalizing hasher would hash produced!=onDisk (or mask the NUL)
+		// and falsely flag stale. Run 3x for determinism.
+		for i := 0; i < 3; i++ {
+			prep2, err := Prepare(c, root, st)
+			if err != nil {
+				t.Fatal(err)
+			}
+			vr, err := prep2.Verify()
+			if err != nil {
+				t.Fatalf("verify iter %d: %v", i, err)
+			}
+			if len(vr.Stale) != 0 {
+				t.Fatalf("verify iter %d: synthetic binary falsely STALE %v — raw-hash regression", i, vr.Stale)
+			}
+		}
+		t.Logf("EVIDENCE: synthetic binary (NUL+CRLF+trailing-ws, %d bytes) verifies in-sync 3x", len(got))
+	})
+}
+
 func containsAll(s string, subs ...string) bool {
 	for _, sub := range subs {
 		found := false

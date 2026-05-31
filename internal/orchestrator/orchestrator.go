@@ -102,7 +102,17 @@ func (s *stagingStore) Set(id string, content []byte) error {
 	return nil
 }
 
+// NodeHasher delegates to the real FileStore so the engine selects each node's
+// kind-specific hasher during a staged sync run (binary kinds → raw hasher,
+// text kinds → normalizing hasher). Without this delegation the staging wrapper
+// would hide the per-node hashers and the engine would fall back to the single
+// hasher — reintroducing the binary-hash inconsistency this fix removes.
+func (s *stagingStore) NodeHasher(id string) (graph.Hasher, error) {
+	return s.real.Hasher(id)
+}
+
 var _ graph.Store = (*stagingStore)(nil)
+var _ graph.PerNodeHasher = (*stagingStore)(nil)
 
 // Run executes one propagation pass.
 //

@@ -227,7 +227,12 @@ func bindOneAt(ts config.TransformSpec, outPath string, target config.NodeSpec, 
 		case config.BuiltinPandocHTML:
 			return adapter.PandocMarkdownToHTML(outPath), nil
 		case config.BuiltinWeasyprintPDF:
-			return adapter.WeasyprintHTMLToPDF(outPath), nil
+			// Pin weasyprint's --base-url to the LIVE target path (not outPath,
+			// which Verify rebinds to a temp) so relative-link resolution — and
+			// the produced PDF bytes — are independent of the staging directory.
+			// This makes a post-sync verify byte-match the committed PDF.
+			liveBase := resolve(projectRoot, target.Path)
+			return adapter.WeasyprintHTMLToPDFAt(outPath, liveBase), nil
 		case config.BuiltinPandocDOCX:
 			return adapter.PandocMarkdownToDOCX(outPath), nil
 		case config.BuiltinMembersFingerprint:
@@ -414,7 +419,6 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 	}
 	defer os.RemoveAll(tmpOut)
 
-	h := p.Hasher
 	for _, id := range order {
 		srcs, isDerived := sources[id]
 		if !isDerived {
@@ -428,6 +432,9 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 		// subdir, so any builtin that derives output metadata from the output
 		// filename (e.g. pandoc's pinned <title>) produces byte-identical
 		// output to a real sync — otherwise verify would falsely flag drift.
+		// The weasyprint producer additionally pins --base-url to the LIVE
+		// target path (see bindOneAt) so its relative-link resolution — and
+		// thus the PDF bytes — are INDEPENDENT of this temp staging directory.
 		nodeDir := filepath.Join(tmpOut, id)
 		if mkErr := os.MkdirAll(nodeDir, 0o755); mkErr != nil {
 			return nil, mkErr
@@ -458,7 +465,17 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 		if gerr != nil {
 			return nil, gerr
 		}
-		if h.Hash(produced) != h.Hash(onDisk) {
+		// BUG FIX (binary-hash verify defect): hash with the node's KIND-SPECIFIC
+		// hasher (binary kinds → raw bytes, text kinds → text normalization),
+		// the SAME hasher the sync-record path (graph.Recompute via the store's
+		// PerNodeHasher) uses for this node. Previously this used the single
+		// text-normalizing p.Hasher for every kind, which mangled binary docx/pdf
+		// bytes and could disagree with the record path.
+		nh, herr := p.Store.Hasher(id)
+		if herr != nil {
+			return nil, herr
+		}
+		if nh.Hash(produced) != nh.Hash(onDisk) {
 			vr.Stale = append(vr.Stale, id)
 		}
 	}

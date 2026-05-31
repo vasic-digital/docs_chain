@@ -71,5 +71,15 @@ func (s *FileStore) Hasher(id string) (graph.Hasher, error) {
 	return a.Hasher(), nil
 }
 
-// compile-time assertion: *FileStore is a graph.Store.
+// NodeHasher satisfies graph.PerNodeHasher so graph.Recompute selects each
+// node's kind-specific hasher (binary kinds → raw-byte hasher, text kinds →
+// normalizing hasher) — consistent with runner.Verify, which uses the same
+// per-node hasher. This is the seam that makes the sync-record and verify-check
+// paths hash a binary node identically.
+func (s *FileStore) NodeHasher(id string) (graph.Hasher, error) {
+	return s.Hasher(id)
+}
+
+// compile-time assertions: *FileStore is a graph.Store and a per-node hasher.
 var _ graph.Store = (*FileStore)(nil)
+var _ graph.PerNodeHasher = (*FileStore)(nil)

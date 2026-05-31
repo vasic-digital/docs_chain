@@ -27,6 +27,24 @@ func lookTool(tool string) (string, error) {
 // the produced file's bytes back. argvFn receives the resolved tool path and
 // the output path and returns the full argv. tmpInputs lets the caller stage
 // input bytes to a temp file the command can consume.
+// reproducibleEpoch is the fixed SOURCE_DATE_EPOCH (2000-01-01T00:00:00Z)
+// injected into every pandoc/weasyprint invocation.
+//
+// BUG FIX (binary-hash verify defect — staleness root cause): pandoc-docx and
+// weasyprint-pdf embed the CURRENT wall-clock time into their output (the zip
+// entry timestamps + docProps dates for docx; the PDF Info/xref dates for
+// pdf). That makes their raw output NON-reproducible across time: a `verify`
+// run re-derives the artefact a few seconds/minutes after `sync` committed it,
+// so the freshly-produced bytes differ from the on-disk bytes purely in those
+// embedded timestamps — and verify (which re-runs the transform and compares
+// produced-vs-on-disk) reports a FALSE "stale". HTML never embeds a timestamp,
+// which is exactly why html nodes verified clean while every docx and the
+// timestamp-sensitive pdf nodes flapped. Both pandoc and weasyprint honour the
+// reproducible-builds SOURCE_DATE_EPOCH standard: pinning it to a fixed value
+// makes their output byte-identical regardless of when it runs, so a
+// post-sync verify matches the committed artefact exactly (exit 0).
+const reproducibleEpoch = "946684800" // 2000-01-01T00:00:00Z
+
 func runProducer(toolPath string, argv []string, outPath string) ([]byte, error) {
 	// AUDIT (CWE-94): toolPath is always the result of exec.LookPath("pandoc")
 	// / exec.LookPath("weasyprint") — never caller-supplied. argv is built
@@ -34,6 +52,10 @@ func runProducer(toolPath string, argv []string, outPath string) ([]byte, error)
 	// itself created. There is no shell (exec.Command, not sh -c) and no
 	// interpolation of untrusted data, so no command-injection surface.
 	cmd := exec.Command(toolPath, argv...) //nolint:gosec // see AUDIT above
+
+	// Pin SOURCE_DATE_EPOCH for reproducible (timestamp-free) output. Inherit
+	// the rest of the environment so PATH/locale/fontconfig still resolve.
+	cmd.Env = append(os.Environ(), "SOURCE_DATE_EPOCH="+reproducibleEpoch)
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -65,17 +87,25 @@ func NewHTMLAdapter(path string) *DerivedAdapter {
 }
 
 // NewDOCXAdapter returns a DerivedAdapter for a .docx output file. DOCX is a
-// binary container (zip), so its hasher is the raw ByteContentHasher over the
-// produced bytes — Normalize is a no-op for binary payloads in practice
-// (there are no CRLF/trailing-whitespace lines to canonicalize), and the
-// hash is the document bytes.
+// binary container (zip), so its hasher is the RAW-byte hasher.
+//
+// BUG FIX (binary-hash verify defect): this previously used
+// hash.NewByteContentHasher() with the false comment "Normalize is a no-op for
+// binary payloads in practice". It is NOT a no-op: the text normalizer
+// rewrites CR/LF byte sequences and strips a trailing 0x0A inside the docx
+// zip, mangling the binary (observed: 17452→17451 bytes). Binary content MUST
+// be hashed verbatim — hash.NewRawByteHasher() — so the sync-record and
+// verify-check paths agree on the document's identity.
 func NewDOCXAdapter(path string) *DerivedAdapter {
-	return &DerivedAdapter{FileAdapter: NewFileAdapter(path, graph.KindDOCX, hash.NewByteContentHasher())}
+	return &DerivedAdapter{FileAdapter: NewFileAdapter(path, graph.KindDOCX, hash.NewRawByteHasher())}
 }
 
-// NewPDFAdapter returns a DerivedAdapter for a .pdf output file.
+// NewPDFAdapter returns a DerivedAdapter for a .pdf output file. PDF is binary,
+// so it is hashed by its RAW bytes (hash.NewRawByteHasher()) — see the
+// NewDOCXAdapter note for why a text normalizer must NOT touch binary content
+// (observed pdf mangling: 93690→93683 bytes under the text normalizer).
 func NewPDFAdapter(path string) *DerivedAdapter {
-	return &DerivedAdapter{FileAdapter: NewFileAdapter(path, graph.KindPDF, hash.NewByteContentHasher())}
+	return &DerivedAdapter{FileAdapter: NewFileAdapter(path, graph.KindPDF, hash.NewRawByteHasher())}
 }
 
 // PandocMarkdownToHTML returns a graph.Transform that converts the single
@@ -140,8 +170,27 @@ func PandocMarkdownToDOCX(outPath string) func(ins map[string][]byte) ([]byte, e
 }
 
 // WeasyprintHTMLToPDF returns a graph.Transform that converts an HTML source
-// to a .pdf via weasyprint. *ToolAbsentError when weasyprint is absent.
+// to a .pdf via weasyprint, pinning weasyprint's --base-url to baseURLPath.
+//
+// BUG FIX (binary-hash verify defect — PDF staleness root cause): weasyprint
+// resolves the HTML's relative URLs (links, images, CSS) against the input
+// file's directory by default and records the resolved link-annotation URIs
+// into the PDF. The engine stages the HTML input to a TEMP file, so without an
+// explicit base the resolved URIs — and the PDF bytes — depend on WHERE the
+// temp lives: a `sync` (temp next to the live artefact) and a `verify` (temp
+// in /tmp) produced different bytes, so verify falsely flagged every pdf STALE.
+// Pinning --base-url to the live target path makes resolution (and the output
+// bytes) INDEPENDENT of the staging directory: sync and verify now produce
+// byte-identical PDFs. baseURLPath should be the LIVE output path (the path the
+// artefact will occupy), NOT the temp outPath.
 func WeasyprintHTMLToPDF(outPath string) func(ins map[string][]byte) ([]byte, error) {
+	return WeasyprintHTMLToPDFAt(outPath, outPath)
+}
+
+// WeasyprintHTMLToPDFAt is WeasyprintHTMLToPDF with an explicit base-url path,
+// decoupled from outPath so verify can write to a temp outPath while keeping
+// the link-resolution base fixed at the live artefact's location.
+func WeasyprintHTMLToPDFAt(outPath, baseURLPath string) func(ins map[string][]byte) ([]byte, error) {
 	return func(ins map[string][]byte) ([]byte, error) {
 		src, err := singleInput(ins)
 		if err != nil {
@@ -159,7 +208,9 @@ func WeasyprintHTMLToPDF(outPath string) func(ins map[string][]byte) ([]byte, er
 		if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 			return nil, err
 		}
-		argv := []string{in, outPath}
+		// --base-url pins relative-URL resolution to the live artefact location
+		// so the produced bytes do not depend on the temp staging directory.
+		argv := []string{"--base-url", baseURLPath, in, outPath}
 		return runProducer(tool, argv, outPath)
 	}
 }

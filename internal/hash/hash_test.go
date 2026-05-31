@@ -51,6 +51,44 @@ func TestByteContentHasher_EmptyNoSpuriousNewline(t *testing.T) {
 	}
 }
 
+// TestRawByteHasher_NoNormalization pins the binary-kind hasher: it hashes raw
+// bytes verbatim (identity Normalize) and therefore DISTINGUISHES inputs that
+// the text ByteContentHasher would collide (CRLF vs LF, trailing whitespace,
+// trailing newline). This is the contract the docx/pdf adapters rely on.
+func TestRawByteHasher_NoNormalization(t *testing.T) {
+	raw := NewRawByteHasher()
+	txt := NewByteContentHasher()
+
+	// Normalize is the identity for raw bytes.
+	in := []byte{'P', 'K', 0x00, '\r', '\n', 'x', ' ', '\t', '\n'}
+	if string(raw.Normalize(in)) != string(in) {
+		t.Fatalf("RawByteHasher.Normalize mutated bytes: got %x want %x", raw.Normalize(in), in)
+	}
+
+	// Inputs the text hasher collides MUST stay distinct under the raw hasher.
+	cases := [][2][]byte{
+		{[]byte("a\r\nb"), []byte("a\nb")}, // CRLF vs LF
+		{[]byte("a \nb"), []byte("a\nb")},  // trailing whitespace
+		{[]byte("data\n"), []byte("data")}, // trailing newline
+	}
+	for i, c := range cases {
+		if txt.Hash(c[0]) != txt.Hash(c[1]) {
+			t.Fatalf("case %d: precondition failed — text hasher should collide these", i)
+		}
+		if raw.Hash(c[0]) == raw.Hash(c[1]) {
+			t.Fatalf("case %d: raw hasher collided %q and %q — must be byte-distinct", i, c[0], c[1])
+		}
+	}
+
+	// Determinism: same bytes -> same hash, 3x (§11.4.50).
+	want := raw.Hash(in)
+	for i := 0; i < 3; i++ {
+		if got := raw.Hash(in); got != want {
+			t.Fatalf("iter %d: raw hash drift", i)
+		}
+	}
+}
+
 func TestFingerprintMembers_OrderIndependent(t *testing.T) {
 	a := FingerprintMembers([]string{"vlc.apk", "mpv.apk", "kodi.apk"})
 	b := FingerprintMembers([]string{"kodi.apk", "vlc.apk", "mpv.apk"})

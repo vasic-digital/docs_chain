@@ -275,6 +275,44 @@ func TestFileStore_GetSet(t *testing.T) {
 	}
 }
 
+// TestBinaryAdapters_UseRawHasher is the regression pin for the binary-hash
+// verify defect at the adapter layer: the docx + pdf adapters MUST hash by RAW
+// bytes (hash.RawByteHasher), NOT the text-normalizing ByteContentHasher.
+//
+// The decisive case: two DISTINCT binary payloads that differ ONLY in a
+// trailing 0x0A (one docx/pdf ends in a newline byte, the other does not). A
+// text normalizer collapses that difference and hashes them EQUAL — masking a
+// real change (a false "in-sync" in verify). The raw hasher MUST keep them
+// distinct. If a future edit reverts these adapters to the text hasher, this
+// test fails.
+func TestBinaryAdapters_UseRawHasher(t *testing.T) {
+	// Two distinct binaries differing only by a trailing newline byte.
+	withNL := []byte{'P', 'K', 0x03, 0x04, 'x', '\n'}
+	noNL := []byte{'P', 'K', 0x03, 0x04, 'x'}
+
+	for _, tc := range []struct {
+		name string
+		a    Adapter
+	}{
+		{"docx", NewDOCXAdapter(filepath.Join(t.TempDir(), "x.docx"))},
+		{"pdf", NewPDFAdapter(filepath.Join(t.TempDir(), "x.pdf"))},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			h := tc.a.Hasher()
+			if h.Hash(withNL) == h.Hash(noNL) {
+				t.Fatalf("%s adapter hashes a trailing-newline binary difference as EQUAL — "+
+					"it is using a text normalizer, not the raw-byte hasher (binary-hash regression)", tc.name)
+			}
+			// And the raw hash must equal a plain sha256 of the exact bytes
+			// (no canonicalization) — proving Normalize is the identity.
+			if string(h.Normalize(withNL)) != string(withNL) {
+				t.Fatalf("%s adapter Normalize mutated binary bytes: got %x want %x",
+					tc.name, h.Normalize(withNL), withNL)
+			}
+		})
+	}
+}
+
 func contains(s, sub string) bool {
 	return len(sub) == 0 || (len(s) >= len(sub) && indexOf(s, sub) >= 0)
 }
