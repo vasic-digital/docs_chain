@@ -1,0 +1,50 @@
+context: self-docs
+description: docs_chain maintains its OWN markdown→html/pdf/docx exports (dogfood)
+nodes:
+  readme_md:    { kind: markdown, path: README.md }
+  readme_html:  { kind: html,     path: README.html }
+  readme_pdf:   { kind: pdf,      path: README.pdf }
+  readme_docx:  { kind: docx,     path: README.docx }
+  arch_md:      { kind: markdown, path: docs/ARCHITECTURE.md }
+  arch_html:    { kind: html,     path: docs/ARCHITECTURE.html }
+  arch_pdf:     { kind: pdf,      path: docs/ARCHITECTURE.pdf }
+  arch_docx:    { kind: docx,     path: docs/ARCHITECTURE.docx }
+  cfg_md:       { kind: markdown, path: docs/CONFIG_SCHEMA.md }
+  cfg_html:     { kind: html,     path: docs/CONFIG_SCHEMA.html }
+  cfg_pdf:      { kind: pdf,      path: docs/CONFIG_SCHEMA.pdf }
+  cfg_docx:     { kind: docx,     path: docs/CONFIG_SCHEMA.docx }
+  const_md:     { kind: markdown, path: docs/CONSTITUTION_INTEGRATION.md }
+  const_html:   { kind: html,     path: docs/CONSTITUTION_INTEGRATION.html }
+  const_pdf:    { kind: pdf,      path: docs/CONSTITUTION_INTEGRATION.pdf }
+  const_docx:   { kind: docx,     path: docs/CONSTITUTION_INTEGRATION.docx }
+  guide_md:     { kind: markdown, path: docs/USER_GUIDE.md }
+  guide_html:   { kind: html,     path: docs/USER_GUIDE.html }
+  guide_pdf:    { kind: pdf,      path: docs/USER_GUIDE.pdf }
+  guide_docx:   { kind: docx,     path: docs/USER_GUIDE.docx }
+  uc_md:        { kind: markdown, path: docs/USE_CASE_CATALOGUE.md }
+  uc_html:      { kind: html,     path: docs/USE_CASE_CATALOGUE.html }
+  uc_pdf:       { kind: pdf,      path: docs/USE_CASE_CATALOGUE.pdf }
+  uc_docx:      { kind: docx,     path: docs/USE_CASE_CATALOGUE.docx }
+edges:
+  - { type: derive-from, from: readme_md,  to: readme_html, transform: md2html }
+  - { type: derive-from, from: readme_html, to: readme_pdf, transform: html2pdf }
+  - { type: derive-from, from: readme_md,  to: readme_docx, transform: md2docx }
+  - { type: derive-from, from: arch_md,    to: arch_html,   transform: md2html }
+  - { type: derive-from, from: arch_html,  to: arch_pdf,    transform: html2pdf }
+  - { type: derive-from, from: arch_md,    to: arch_docx,   transform: md2docx }
+  - { type: derive-from, from: cfg_md,     to: cfg_html,    transform: md2html }
+  - { type: derive-from, from: cfg_html,   to: cfg_pdf,     transform: html2pdf }
+  - { type: derive-from, from: cfg_md,     to: cfg_docx,    transform: md2docx }
+  - { type: derive-from, from: const_md,   to: const_html,  transform: md2html }
+  - { type: derive-from, from: const_html, to: const_pdf,   transform: html2pdf }
+  - { type: derive-from, from: const_md,   to: const_docx,  transform: md2docx }
+  - { type: derive-from, from: guide_md,   to: guide_html,  transform: md2html }
+  - { type: derive-from, from: guide_html, to: guide_pdf,   transform: html2pdf }
+  - { type: derive-from, from: guide_md,   to: guide_docx,  transform: md2docx }
+  - { type: derive-from, from: uc_md,      to: uc_html,     transform: md2html }
+  - { type: derive-from, from: uc_html,    to: uc_pdf,      transform: html2pdf }
+  - { type: derive-from, from: uc_md,      to: uc_docx,     transform: md2docx }
+transforms:
+  md2html:  { builtin: pandoc-html }
+  html2pdf: { builtin: weasyprint-pdf }
+  md2docx:  { builtin: pandoc-docx }

@@ -91,6 +91,7 @@
       color: #606060;
     }
     code {
+      white-space: pre-wrap;
       font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
       font-size: 85%;
       margin: 0;
@@ -154,7 +155,6 @@
     #TOC a:not(:hover) {
       text-decoration: none;
     }
-    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
     div.column{flex: auto; overflow-x: auto;}
@@ -237,14 +237,19 @@
   </style>
 </head>
 <body>
+<header id="title-block-header">
+<h1 class="title">USER_GUIDE</h1>
+</header>
 <h1 id="docs-chain-user-guide">Docs Chain — User Guide</h1>
 <p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> The Phase 1 core engine
-(<code>internal/hash</code> + <code>internal/graph</code>) is
-IMPLEMENTED + tested (<code>go test ./...</code> passes). The CLI/daemon
-workflow described in this guide is PLANNED (Phases 2–4). See status
-tags per section. <strong>Authority:</strong> Operator mandate
-2026-05-29 (Docs Chain initiative) <strong>Design provenance:</strong>
+2026-05-29T12:00:00Z <strong>Status:</strong> The Phase 1–3 engine plus
+the Phase-4 config loader + CLI (<code>doctor</code> / <code>sync</code>
+/ <code>verify</code> / <code>graph</code>) are IMPLEMENTED + tested
+(<code>go test -race ./...</code> passes); the built
+<code>docs_chain</code> binary runs these subcommands today. The
+fsnotify <code>watch</code> daemon (§8) remains PLANNED. See status tags
+per section. <strong>Authority:</strong> Operator mandate 2026-05-29
+(Docs Chain initiative) <strong>Design provenance:</strong>
 authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
 project research tree (<code>docs/research/docs_chain/</code>); this
 document is the self-contained specification.</p>
@@ -257,13 +262,13 @@ tag:</p>
 <li><strong>PLANNED (Phase N)</strong> — designed, not yet built (per
 <code>PLAN.md</code>).</li>
 </ul>
-<p>The Phase 1 core engine (<code>internal/hash</code> +
-<code>internal/graph</code>) is built and tested and is usable today as
-a Go library (see the README quick-start). The <code>cmd/</code>
-CLI/daemon is Phase 4, so <strong>every shell command invocation in this
-guide is PLANNED</strong>. The copy-paste examples show the DESIGNED CLI
-interface so a consuming project can prepare its contexts ahead of the
-Phase 4 CLI landing. They are not claims that the binary runs today.</p>
+<p>The Phase 1–3 engine and the Phase-4 config loader + CLI are built
+and tested. The <code>docs_chain</code> binary runs <code>doctor</code>
+/ <code>sync</code> / <code>verify</code> / <code>graph</code> today
+(each section below is tagged IMPLEMENTED). The only PLANNED shell
+workflow in this guide is the fsnotify <code>watch</code> daemon (§8);
+its copy-paste example shows the DESIGNED interface and is not a claim
+that <code>watch</code> runs today.</p>
 <hr />
 <h2 id="what-you-adopt-docs-chain-for">1. What you adopt Docs Chain
 for</h2>
@@ -344,7 +349,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="
 <hr />
 <h2 id="initialize-.docs_chain">4. Initialize
 <code>.docs_chain/</code></h2>
-<p><strong>Status: PLANNED (Phase 4 — config loader).</strong></p>
+<p><strong>Status: IMPLEMENTED (Phase 4 — config loader).</strong></p>
 <p>Docs Chain reads per-context YAML from
 <code>.docs_chain/contexts/</code> at your project root and writes its
 hash state to <code>.docs_chain/state.json</code>.</p>
@@ -359,7 +364,7 @@ are your chain definitions. <code>state.json</code> is NOT tracked —
 <code>docs_chain sync</code> regenerates it from the live artefacts.</p>
 <hr />
 <h2 id="define-a-context">5. Define a context</h2>
-<p><strong>Status: PLANNED (Phase 4).</strong></p>
+<p><strong>Status: IMPLEMENTED (Phase 4 — config loader).</strong></p>
 <p>A context is one YAML file describing the nodes and edges of one
 chain. Minimal example for a single Markdown doc with HTML + PDF exports
 (the universal markdown-export chain, §11.4.65):</p>
@@ -400,7 +405,8 @@ refuses to run on a cycle (exit 4).</li>
 </ul>
 <hr />
 <h2 id="run-a-one-shot-sync">7. Run a one-shot sync</h2>
-<p><strong>Status: PLANNED (Phase 4 — <code>sync</code>).</strong></p>
+<p><strong>Status: IMPLEMENTED (Phase 4 —
+<code>sync</code>).</strong></p>
 <div class="sourceCode" id="cb6"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync one context</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docs_chain</span> sync guide</span>
@@ -481,8 +487,8 @@ one side is dirty and the run proceeds.</li>
 is yours.</p>
 <hr />
 <h2 id="ci-integration">10. CI integration</h2>
-<p><strong>Status: PLANNED (Phase 4 <code>verify</code>; Phase 7.4
-operator-gated pre-build wiring).</strong></p>
+<p><strong>Status: IMPLEMENTED (Phase 4 <code>verify</code>); Phase 7.4
+operator-gated pre-build wiring PLANNED.</strong></p>
 <p>Use the read-only <code>verify</code> command as a gate: it reports
 drift and writes nothing.</p>
 <div class="sourceCode" id="cb8"><pre

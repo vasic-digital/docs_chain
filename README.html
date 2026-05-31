@@ -91,6 +91,7 @@
       color: #606060;
     }
     code {
+      white-space: pre-wrap;
       font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
       font-size: 85%;
       margin: 0;
@@ -154,7 +155,6 @@
     #TOC a:not(:hover) {
       text-decoration: none;
     }
-    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
     div.column{flex: auto; overflow-x: auto;}
@@ -237,17 +237,23 @@
   </style>
 </head>
 <body>
+<header id="title-block-header">
+<h1 class="title">README</h1>
+</header>
 <h1 id="docs-chain">Docs Chain</h1>
 <p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> Docs Chain Phases 1–3
-IMPLEMENTED + tested (<code>internal/hash</code> +
-<code>internal/graph</code> + <code>internal/adapter</code> +
-<code>internal/orchestrator</code> — <code>go test ./...</code> passes).
-Phases 4–7 PLANNED per the plan. This README and the docs under
-<code>docs/</code> mark each capability IMPLEMENTED vs PLANNED and do
-not claim working behaviour that is not yet built (§11.4.6).
-<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
-initiative)</p>
+2026-05-29T12:00:00Z <strong>Status:</strong> Docs Chain Phases 1–3 plus
+the Phase-4 config loader + CLI IMPLEMENTED + tested
+(<code>internal/hash</code> + <code>internal/graph</code> +
+<code>internal/adapter</code> + <code>internal/orchestrator</code> +
+<code>internal/config</code> + <code>internal/state</code> +
+<code>internal/runner</code> + <code>cmd/docs_chain</code> —
+<code>go test -race ./...</code> passes). The Phase-4 fsnotify
+<code>watch</code> daemon and Phases 5–7 remain PLANNED. This README and
+the docs under <code>docs/</code> mark each capability IMPLEMENTED vs
+PLANNED and do not claim working behaviour that is not yet built
+(§11.4.6). <strong>Authority:</strong> Operator mandate 2026-05-29 (Docs
+Chain initiative)</p>
 <hr />
 <p>Docs Chain is a universal, Go-implemented, <strong>bidirectional
 document-and-database dependency-propagation engine</strong>. When any
@@ -307,8 +313,12 @@ SQLite-transaction commit.</p>
 </tr>
 <tr>
 <td>4</td>
-<td>Config-driven multi-context + CLI/daemon</td>
-<td>PLANNED</td>
+<td>Config-driven multi-context + CLI</td>
+<td><strong>IMPLEMENTED + tested</strong> (<code>internal/config</code>,
+<code>internal/state</code>, <code>internal/runner</code>,
+<code>cmd/docs_chain</code> —
+<code>sync</code>/<code>verify</code>/<code>doctor</code>/<code>graph</code>).
+The fsnotify <code>watch</code> daemon remains PLANNED.</td>
 </tr>
 <tr>
 <td>5</td>
@@ -330,13 +340,13 @@ SQLite-transaction commit.</p>
 <h3 id="what-is-implemented-today-go-test-....-passes">What is
 IMPLEMENTED today (<code>go test ./...</code> passes)</h3>
 <ul>
-<li><strong><code>internal/hash</code></strong> — <code>Hasher</code>
+<li><p><strong><code>internal/hash</code></strong> — <code>Hasher</code>
 interface + <code>ByteContentHasher</code> (LF normalization,
 trailing-whitespace strip, single trailing newline) so
 semantically-equivalent inputs collide by design; plus the sorted
 member-list fingerprint for roster/corpus sidecars (§11.4.86). Change
-detection is by <strong>content hash, never mtime</strong>.</li>
-<li><strong><code>internal/graph</code></strong> — the DAG
+detection is by <strong>content hash, never mtime</strong>.</p></li>
+<li><p><strong><code>internal/graph</code></strong> — the DAG
 (<code>Node</code>/<code>Edge</code>/<code>Graph</code>),
 <code>Validate</code> (cycle detection → <code>CycleError</code>),
 <code>TopoOrder</code> (deterministic Kahn ordering), and the recompute
@@ -344,8 +354,8 @@ engine: <code>Recompute</code> (early-cutoff — unchanged inputs skip
 transform), <code>ResolveSync</code> (declared-authority bidirectional
 <code>sync</code> edges with <code>ConflictError</code>), and
 <code>CommitHashes</code>. An in-memory <code>Store</code>
-(<code>MemStore</code>) backs the unit tests.</li>
-<li><strong><code>internal/adapter</code></strong> (Phase 2) —
+(<code>MemStore</code>) backs the unit tests.</p></li>
+<li><p><strong><code>internal/adapter</code></strong> (Phase 2) —
 node-content adapters backing real stores: a <code>FileAdapter</code>
 for <code>markdown</code> (and the on-disk html/pdf/docx outputs) with
 per-file atomic temp-then-rename writes; DERIVED transforms that shell
@@ -360,8 +370,8 @@ success; a <code>SQLiteAdapter</code> (pure-Go
 so identical row sets collide regardless of insert order; and a
 <code>FileStore</code> implementing the Phase-1 <code>graph.Store</code>
 interface on top of these adapters, so <code>graph.Recompute</code> runs
-unmodified against real files and databases.</li>
-<li><strong><code>internal/orchestrator</code></strong> (Phase 3) —
+unmodified against real files and databases.</p></li>
+<li><p><strong><code>internal/orchestrator</code></strong> (Phase 3) —
 <code>Run</code> ties <code>graph.Recompute</code> to the
 <code>FileStore</code> with three guarantees: <strong>atomicity</strong>
 (regenerated outputs are staged in-memory and written only after the
@@ -373,16 +383,52 @@ writing nothing), and <strong>sync-conflict</strong> surfacing
 It returns the <code>RecomputeResult</code> plus a committed /
 rolled-back / in-sync / conflict / cycle <code>Status</code>. A staged
 intermediate feeds the next transform, so multi-level chains
-(md→html→pdf) propagate in one pass.</li>
+(md→html→pdf) propagate in one pass.</p></li>
+<li><p><strong><code>internal/config</code></strong> (Phase 4) — the
+per-context YAML loader + validator
+(<code>Load</code>/<code>LoadDir</code>/<code>Parse</code>/<code>Validate</code>/<code>BuildGraph</code>).
+Parses <code>.docs_chain/contexts/&lt;name&gt;.yaml</code> into the
+node/edge/transform model, accepts the <code>from: &lt;id&gt;</code> /
+<code>from: [&lt;id&gt;, …]</code> multi-input union, rejects unknown
+fields, and enforces every CONFIG_SCHEMA §8 rule (empty context,
+dangling node/transform refs, builtin-xor-exec, fingerprint
+<code>members</code>, sync <code>authority</code> ∈ {a,b}, derive-from
+acyclicity) with loud <code>*ConfigError</code>s.</p></li>
+<li><p><strong><code>internal/state</code></strong> (Phase 4) —
+<code>state.json</code> content-hash baseline
+(<code>&lt;root&gt;/.docs_chain/state.json</code>,
+gitignored/regenerable per §11.4.77) with atomic temp-then-rename save;
+a missing file is a clean cold start.</p></li>
+<li><p><strong><code>internal/runner</code></strong> (Phase 4) — wires a
+loaded context to the Phase 1–3 engine: registers a Phase-2 adapter per
+node, binds each config transform to a real <code>graph.Transform</code>
+(builtins <code>pandoc-html</code> / <code>weasyprint-pdf</code> /
+<code>pandoc-docx</code> / <code>members-fingerprint</code>;
+<code>exec:</code> transforms stage input/output temp files per
+CONFIG_SCHEMA §5.2 and shell to the consumer’s binary), hydrates the
+hash baseline from state, runs the orchestrator (<code>sync</code>), and
+performs the read-only sink-side drift check (<code>verify</code>) into
+a temp output so it never mutates a live artefact.</p></li>
+<li><p><strong><code>cmd/docs_chain</code></strong> (Phase 4) — the
+consumer-facing CLI with the documented exit-code contract (0
+in-sync/applied · 1 error · 2 conflict · 3 transform-fail · 4
+cycle/config-error). Subcommands: <code>doctor</code> (validate +
+tool-availability, no writes), <code>sync</code> (atomic propagate +
+<code>state.json</code> update +
+<code>qa-results/docs_chain/&lt;run-id&gt;/</code> evidence),
+<code>verify</code> (read-only CI gate, non-zero on drift),
+<code>graph</code> (topo order + edges). Tool-absent runs roll back
+honestly (no fake output) and the message says so.</p></li>
 </ul>
 <h3
 id="what-is-planned-not-yet-functional-do-not-assume-working-behaviour">What
 is PLANNED (NOT yet functional — do not assume working behaviour)</h3>
-<p>The <code>cmd/</code> CLI/daemon, per-context YAML config loading,
-the comprehensive beyond-package test suite, and the
-constitution-submodule integration are owned by Phases 4–7 and are NOT
-implemented in this repo yet. The <code>docs/</code> pages describe
-their DESIGNED contract.</p>
+<p>The fsnotify <code>watch</code> daemon (Phase 4 —
+<code>docs_chain watch</code>), the comprehensive beyond-package test
+suite (Phase 5), and the constitution-submodule integration (Phases 6–7)
+are NOT implemented in this repo yet. The <code>docs/</code> pages
+describe their DESIGNED contract. <code>docs_chain watch</code> is not
+wired; use <code>sync</code> / <code>verify</code> on demand.</p>
 <h2 id="documentation">Documentation</h2>
 <table>
 <colgroup>
@@ -435,15 +481,31 @@ register.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="quick-start-phase-1-core-engine">Quick start (Phase 1 core
-engine)</h2>
+<h2 id="quick-start-cli-phase-4">Quick start (CLI — Phase 4)</h2>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone git@github.com:vasic-digital/docs_chain.git</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> docs_chain</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> test ./...        <span class="co"># internal/hash + internal/graph — all green</span></span></code></pre></div>
-<p>The library API today is consumed programmatically (the
-<code>cmd/</code> CLI is Phase 4). Minimal use of the implemented
-core:</p>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> test <span class="at">-race</span> ./...                 <span class="co"># whole suite — all green</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> build <span class="at">-o</span> ./docs_chain ./cmd/docs_chain</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># In a consuming project root that has .docs_chain/contexts/&lt;name&gt;.yaml:</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">./docs_chain</span> doctor <span class="at">--root</span> . guide  <span class="co"># validate (no writes)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./docs_chain</span> sync   <span class="at">--root</span> . guide  <span class="co"># propagate atomically, update state.json</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./docs_chain</span> verify <span class="at">--root</span> . guide  <span class="co"># read-only CI gate; non-zero on drift</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">./docs_chain</span> graph  <span class="at">--root</span> . guide  <span class="co"># print topo order + edges</span></span></code></pre></div>
+<p>Exit codes: <code>0</code> in-sync/applied · <code>1</code> error ·
+<code>2</code> conflict (both sides of a <code>sync</code> edge dirty) ·
+<code>3</code> transform-fail (rolled back, no live changes) ·
+<code>4</code> cycle/config-error. A <code>sync</code> run records
+evidence under <code>qa-results/docs_chain/&lt;run-id&gt;/</code>; the
+content-hash baseline lives in
+<code>&lt;root&gt;/.docs_chain/state.json</code> (gitignored,
+regenerable). When <code>pandoc</code> / <code>weasyprint</code> is
+absent the run rolls back honestly and says so — it never fakes an
+export.</p>
+<h3 id="library-api-phase-1-core-engine">Library API (Phase 1 core
+engine)</h3>
+<p>The core is also usable programmatically. Minimal use:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="op">(</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;digital.vasic.docs_chain/internal/graph&quot;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;digital.vasic.docs_chain/internal/hash&quot;</span></span>

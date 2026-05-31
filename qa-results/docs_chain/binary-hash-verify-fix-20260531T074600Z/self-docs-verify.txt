@@ -1,0 +1,41 @@
+# docs_chain — binary-hash verify defect: fix proof transcript
+# captured 2026-05-31T07:46:20Z UTC
+# tools: pandoc 3.9.0.2 ; WeasyPrint version 66.0
+# context: .docs_chain/contexts/self-docs.yaml (6 markdown -> html/pdf/docx = 24 nodes)
+
+## 1. doctor (expect exit 0)
+context "self-docs" (.docs_chain/contexts/self-docs.yaml)
+  parse + graph: OK (24 nodes, 18 edges)
+  transforms: OK (all required tools present)
+exit=0
+
+## 2. sync (regenerate engine baseline, expect exit 0 + committed)
+self-docs                applied: committed [arch_docx arch_html arch_pdf cfg_docx cfg_html cfg_pdf const_docx const_html const_pdf guide_docx guide_html guide_pdf readme_docx readme_html readme_pdf uc_docx uc_html uc_pdf]
+exit=
+
+## 3. verify x3 immediately after sync (THE FIX PROOF — expect in-sync exit 0 incl. all docx + pdf)
+self-docs                in-sync
+verify#1 exit=0
+self-docs                in-sync
+verify#2 exit=0
+self-docs                in-sync
+verify#3 exit=0
+
+## 4. determinism: re-sync (expect in-sync no-changes) then verify exit 0
+self-docs                in-sync (no changes)
+self-docs                in-sync
+exit=0
+
+## 5. negative control: edit a source .md -> verify STALE exit 1 -> sync -> verify exit 0
+-- after editing README.md:
+self-docs                STALE: [readme_html]
+exit=1
+-- sync to propagate:
+self-docs                applied: committed [readme_html]
+-- verify after sync:
+self-docs                in-sync
+exit=0
+-- restore README.md to committed content + re-sync siblings to match:
+self-docs                applied: committed [readme_html]
+self-docs                in-sync
+final exit=0
