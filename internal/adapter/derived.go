@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"digital.vasic.docs_chain/internal/graph"
 	"digital.vasic.docs_chain/internal/hash"
@@ -99,7 +100,14 @@ func PandocMarkdownToHTML(outPath string) func(ins map[string][]byte) ([]byte, e
 		if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 			return nil, err
 		}
-		argv := []string{"--standalone", "--from=markdown", "--to=html", "-o", outPath, in}
+		// `--standalone` derives <title> from the input *filename* by default,
+		// which is a randomized temp name — that would leak into the output and
+		// break the byte-stability contract (CONFIG_SCHEMA §5.2 / §11.4.50).
+		// Pin the title to the stable output basename so identical markdown
+		// always yields identical HTML regardless of the staging temp name.
+		title := strings.TrimSuffix(filepath.Base(outPath), filepath.Ext(outPath))
+		argv := []string{"--standalone", "--from=markdown", "--to=html",
+			"--metadata", "title=" + title, "-o", outPath, in}
 		return runProducer(tool, argv, outPath)
 	}
 }
@@ -124,7 +132,9 @@ func PandocMarkdownToDOCX(outPath string) func(ins map[string][]byte) ([]byte, e
 		if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 			return nil, err
 		}
-		argv := []string{"--from=markdown", "--to=docx", "-o", outPath, in}
+		title := strings.TrimSuffix(filepath.Base(outPath), filepath.Ext(outPath))
+		argv := []string{"--from=markdown", "--to=docx",
+			"--metadata", "title=" + title, "-o", outPath, in}
 		return runProducer(tool, argv, outPath)
 	}
 }

@@ -1,0 +1,11 @@
+# Docs Chain runtime state (regenerable per §11.4.77) — never committed by a
+# consuming project. The per-context YAML under .docs_chain/contexts/ IS
+# tracked; only the generated hash baseline + transient sidecars are ignored.
+.docs_chain/state.json
+*.docs_chain.tmp
+
+# Go build/test artefacts
+*.test
+*.out
+coverage.*
+profile.cov

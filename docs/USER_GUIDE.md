@@ -2,7 +2,7 @@
 
 **Revision:** 2
 **Last modified:** 2026-05-29T12:00:00Z
-**Status:** The Phase 1 core engine (`internal/hash` + `internal/graph`) is IMPLEMENTED + tested (`go test ./...` passes). The CLI/daemon workflow described in this guide is PLANNED (Phases 2–4). See status tags per section.
+**Status:** The Phase 1–3 engine plus the Phase-4 config loader + CLI (`doctor` / `sync` / `verify` / `graph`) are IMPLEMENTED + tested (`go test -race ./...` passes); the built `docs_chain` binary runs these subcommands today. The fsnotify `watch` daemon (§8) remains PLANNED. See status tags per section.
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -16,12 +16,12 @@ Per §11.4.6 (no-guessing), every workflow below carries a status tag:
 - **PLANNED (Phase N)** — designed, not yet built (per
   `PLAN.md`).
 
-The Phase 1 core engine (`internal/hash` + `internal/graph`) is built and
-tested and is usable today as a Go library (see the README quick-start).
-The `cmd/` CLI/daemon is Phase 4, so **every shell command invocation in
-this guide is PLANNED**. The copy-paste examples show the DESIGNED CLI
-interface so a consuming project can prepare its contexts ahead of the
-Phase 4 CLI landing. They are not claims that the binary runs today.
+The Phase 1–3 engine and the Phase-4 config loader + CLI are built and
+tested. The `docs_chain` binary runs `doctor` / `sync` / `verify` / `graph`
+today (each section below is tagged IMPLEMENTED). The only PLANNED shell
+workflow in this guide is the fsnotify `watch` daemon (§8); its copy-paste
+example shows the DESIGNED interface and is not a claim that `watch` runs
+today.
 
 ---
 
@@ -85,7 +85,7 @@ go build -o ./docs_chain ./cmd/docs_chain
 
 ## 4. Initialize `.docs_chain/`
 
-**Status: PLANNED (Phase 4 — config loader).**
+**Status: IMPLEMENTED (Phase 4 — config loader).**
 
 Docs Chain reads per-context YAML from `.docs_chain/contexts/` at your
 project root and writes its hash state to `.docs_chain/state.json`.
@@ -109,7 +109,7 @@ it from the live artefacts.
 
 ## 5. Define a context
 
-**Status: PLANNED (Phase 4).**
+**Status: IMPLEMENTED (Phase 4 — config loader).**
 
 A context is one YAML file describing the nodes and edges of one chain.
 Minimal example for a single Markdown doc with HTML + PDF exports (the
@@ -156,7 +156,7 @@ doc-link, CONTINUATION) are in
 
 ## 7. Run a one-shot sync
 
-**Status: PLANNED (Phase 4 — `sync`).**
+**Status: IMPLEMENTED (Phase 4 — `sync`).**
 
 ```bash
 # Sync one context
@@ -222,8 +222,8 @@ yours.
 
 ## 10. CI integration
 
-**Status: PLANNED (Phase 4 `verify`; Phase 7.4 operator-gated pre-build
-wiring).**
+**Status: IMPLEMENTED (Phase 4 `verify`); Phase 7.4 operator-gated
+pre-build wiring PLANNED.**
 
 Use the read-only `verify` command as a gate: it reports drift and writes
 nothing.

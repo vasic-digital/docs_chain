@@ -2,7 +2,7 @@
 
 **Revision:** 3
 **Last modified:** 2026-05-29T12:00:00Z
-**Status:** Docs Chain Phases 1–3 IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` — `go test ./...` passes). Phases 4–7 PLANNED per the plan. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
+**Status:** Docs Chain Phases 1–3 plus the Phase-4 config loader + CLI IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` + `internal/config` + `internal/state` + `internal/runner` + `cmd/docs_chain` — `go test -race ./...` passes). The Phase-4 fsnotify `watch` daemon and Phases 5–7 remain PLANNED. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 
 ---
@@ -34,7 +34,7 @@ Kahn topological ordering, early-cutoff, declared-authority bidirectional
 | 1 | Core DAG + content-hash engine | **IMPLEMENTED + tested** (`internal/hash`, `internal/graph`) |
 | 2 | Node adapters + transforms | **IMPLEMENTED + tested** (`internal/adapter`) |
 | 3 | Propagation orchestrator + atomicity (filesystem/SQLite) | **IMPLEMENTED + tested** (`internal/orchestrator`) |
-| 4 | Config-driven multi-context + CLI/daemon | PLANNED |
+| 4 | Config-driven multi-context + CLI | **IMPLEMENTED + tested** (`internal/config`, `internal/state`, `internal/runner`, `cmd/docs_chain` — `sync`/`verify`/`doctor`/`graph`). The fsnotify `watch` daemon remains PLANNED. |
 | 5 | Comprehensive test suite (beyond the Phase 1–3 package tests) | PLANNED |
 | 6 | Constitution-submodule integration + repo creation | PLANNED — OPERATOR-GATED |
 | 7 | ATMOSphere wiring + retire ad-hoc scripts | PLANNED |
@@ -75,12 +75,40 @@ Kahn topological ordering, early-cutoff, declared-authority bidirectional
   cycle `Status`. A staged intermediate feeds the next transform, so
   multi-level chains (md→html→pdf) propagate in one pass.
 
+- **`internal/config`** (Phase 4) — the per-context YAML loader + validator
+  (`Load`/`LoadDir`/`Parse`/`Validate`/`BuildGraph`). Parses
+  `.docs_chain/contexts/<name>.yaml` into the node/edge/transform model,
+  accepts the `from: <id>` / `from: [<id>, …]` multi-input union, rejects
+  unknown fields, and enforces every CONFIG_SCHEMA §8 rule (empty context,
+  dangling node/transform refs, builtin-xor-exec, fingerprint `members`,
+  sync `authority` ∈ {a,b}, derive-from acyclicity) with loud
+  `*ConfigError`s.
+- **`internal/state`** (Phase 4) — `state.json` content-hash baseline
+  (`<root>/.docs_chain/state.json`, gitignored/regenerable per §11.4.77) with
+  atomic temp-then-rename save; a missing file is a clean cold start.
+- **`internal/runner`** (Phase 4) — wires a loaded context to the Phase 1–3
+  engine: registers a Phase-2 adapter per node, binds each config transform to
+  a real `graph.Transform` (builtins `pandoc-html` / `weasyprint-pdf` /
+  `pandoc-docx` / `members-fingerprint`; `exec:` transforms stage input/output
+  temp files per CONFIG_SCHEMA §5.2 and shell to the consumer's binary),
+  hydrates the hash baseline from state, runs the orchestrator (`sync`), and
+  performs the read-only sink-side drift check (`verify`) into a temp output so
+  it never mutates a live artefact.
+- **`cmd/docs_chain`** (Phase 4) — the consumer-facing CLI with the documented
+  exit-code contract (0 in-sync/applied · 1 error · 2 conflict · 3
+  transform-fail · 4 cycle/config-error). Subcommands: `doctor`
+  (validate + tool-availability, no writes), `sync` (atomic propagate +
+  `state.json` update + `qa-results/docs_chain/<run-id>/` evidence), `verify`
+  (read-only CI gate, non-zero on drift), `graph` (topo order + edges).
+  Tool-absent runs roll back honestly (no fake output) and the message says so.
+
 ### What is PLANNED (NOT yet functional — do not assume working behaviour)
 
-The `cmd/` CLI/daemon, per-context YAML config loading, the comprehensive
-beyond-package test suite, and the constitution-submodule integration are
-owned by Phases 4–7 and are NOT implemented in this repo yet. The `docs/`
-pages describe their DESIGNED contract.
+The fsnotify `watch` daemon (Phase 4 — `docs_chain watch`), the comprehensive
+beyond-package test suite (Phase 5), and the constitution-submodule
+integration (Phases 6–7) are NOT implemented in this repo yet. The `docs/`
+pages describe their DESIGNED contract. `docs_chain watch` is not wired; use
+`sync` / `verify` on demand.
 
 ## Documentation
 
@@ -92,16 +120,32 @@ pages describe their DESIGNED contract.
 | [`docs/USE_CASE_CATALOGUE.md`](docs/USE_CASE_CATALOGUE.md) | Living registry of 8 ready-to-use chain recipes (issues, fixed, status, roster/corpus, changelog, README doc-link, universal markdown-export, CONTINUATION). |
 | [`docs/CONSTITUTION_INTEGRATION.md`](docs/CONSTITUTION_INTEGRATION.md) | How the constitution submodule makes Docs Chain available to every consuming project — inheritance model, config discovery, the §11.4.x anchors it satisfies, what a project gets for free vs must register. |
 
-## Quick start (Phase 1 core engine)
+## Quick start (CLI — Phase 4)
 
 ```bash
 git clone git@github.com:vasic-digital/docs_chain.git
 cd docs_chain
-go test ./...        # internal/hash + internal/graph — all green
+go test -race ./...                 # whole suite — all green
+go build -o ./docs_chain ./cmd/docs_chain
+
+# In a consuming project root that has .docs_chain/contexts/<name>.yaml:
+./docs_chain doctor --root . guide  # validate (no writes)
+./docs_chain sync   --root . guide  # propagate atomically, update state.json
+./docs_chain verify --root . guide  # read-only CI gate; non-zero on drift
+./docs_chain graph  --root . guide  # print topo order + edges
 ```
 
-The library API today is consumed programmatically (the `cmd/` CLI is
-Phase 4). Minimal use of the implemented core:
+Exit codes: `0` in-sync/applied · `1` error · `2` conflict (both sides of a
+`sync` edge dirty) · `3` transform-fail (rolled back, no live changes) · `4`
+cycle/config-error. A `sync` run records evidence under
+`qa-results/docs_chain/<run-id>/`; the content-hash baseline lives in
+`<root>/.docs_chain/state.json` (gitignored, regenerable). When `pandoc` /
+`weasyprint` is absent the run rolls back honestly and says so — it never
+fakes an export.
+
+### Library API (Phase 1 core engine)
+
+The core is also usable programmatically. Minimal use:
 
 ```go
 import (

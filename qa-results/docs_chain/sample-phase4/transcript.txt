@@ -1,0 +1,45 @@
+# Docs Chain Phase 4 — QA evidence (sample run)
+# Captured: 2026-05-31T07:20:03Z ; host pandoc + weasyprint present
+
+## doctor
+context "sample" (.docs_chain/contexts/sample.yaml)
+  parse + graph: OK (3 nodes, 2 edges)
+  transforms: OK (all required tools present)
+exit=0
+
+## sync (run 1 — applied)
+sample                   applied: committed [s_html s_pdf]
+evidence: qa-results/docs_chain/20260531T072003Z
+exit=0
+
+## produced artefacts
+ 
+3945 S.html
+27 S.md
+5573 S.pdf
+/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.UE2CdeDqtc/docs/S.pdf: PDF document, version 1.7
+
+## sync (run 2 — content-hash early cutoff, in-sync no rewrite)
+sample                   in-sync (no changes)
+evidence: qa-results/docs_chain/20260531T072004Z
+exit=0
+
+## verify (in-sync, exit 0)
+sample                   in-sync
+exit=0
+
+## edit source -> verify reports STALE (exit 1, the CI gate fires)
+sample                   STALE: [s_html]
+exit=1
+
+## state.json (content-hash baseline)
+{
+  "version": 1,
+  "contexts": {
+    "sample": {
+      "s_html": "efb03e56af1e6a39781fd730778b100dc1e7a258e92d870bde36cd7b5326ca04",
+      "s_md": "1ea75b00a2e2e6706ce6f1b48b2c873c0d3da79f591557d7453776eba1fc699a",
+      "s_pdf": "b3dd12c35c85105412a28ad1db33d0ccbffcd4e5703c8b3940e73a3c038eb19a"
+    }
+  }
+}
