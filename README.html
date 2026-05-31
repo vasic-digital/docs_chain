@@ -241,19 +241,24 @@
 <h1 class="title">README</h1>
 </header>
 <h1 id="docs-chain">Docs Chain</h1>
-<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> Docs Chain Phases 1–3 plus
+<p><strong>Revision:</strong> 4 <strong>Last modified:</strong>
+2026-05-31T12:00:00Z <strong>Status:</strong> Docs Chain Phases 1–3 plus
 the Phase-4 config loader + CLI IMPLEMENTED + tested
 (<code>internal/hash</code> + <code>internal/graph</code> +
 <code>internal/adapter</code> + <code>internal/orchestrator</code> +
 <code>internal/config</code> + <code>internal/state</code> +
 <code>internal/runner</code> + <code>cmd/docs_chain</code> —
-<code>go test -race ./...</code> passes). The Phase-4 fsnotify
-<code>watch</code> daemon and Phases 5–7 remain PLANNED. This README and
-the docs under <code>docs/</code> mark each capability IMPLEMENTED vs
-PLANNED and do not claim working behaviour that is not yet built
-(§11.4.6). <strong>Authority:</strong> Operator mandate 2026-05-29 (Docs
-Chain initiative)</p>
+<code>go test -race ./...</code> passes). The first downstream consumer
+(Herald) has wired a full 66-doc Markdown→HTML/PDF/DOCX corpus via
+<code>exec:</code> transforms and <code>verify</code>s exit 0 across it
+(see <a
+href="docs/USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald"><code>docs/USE_CASE_CATALOGUE.md</code>
+Appendix Z</a>). The Phase-4 fsnotify <code>watch</code> daemon and
+Phases 5–7 remain PLANNED. This README and the docs under
+<code>docs/</code> mark each capability IMPLEMENTED vs PLANNED and do
+not claim working behaviour that is not yet built (§11.4.6).
+<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
+initiative)</p>
 <hr />
 <p>Docs Chain is a universal, Go-implemented, <strong>bidirectional
 document-and-database dependency-propagation engine</strong>. When any
@@ -469,7 +474,9 @@ values, defaults, validation rules; annotated <code>derive-from</code> +
 href="docs/USE_CASE_CATALOGUE.md"><code>docs/USE_CASE_CATALOGUE.md</code></a></td>
 <td>Living registry of 8 ready-to-use chain recipes (issues, fixed,
 status, roster/corpus, changelog, README doc-link, universal
-markdown-export, CONTINUATION).</td>
+markdown-export, CONTINUATION), plus <strong>Appendix Z</strong> — a
+worked, verify-green consumer example (Herald) showing the
+relative-asset-stable <code>exec:</code> export pattern.</td>
 </tr>
 <tr>
 <td><a

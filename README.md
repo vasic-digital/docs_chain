@@ -1,8 +1,8 @@
 # Docs Chain
 
-**Revision:** 3
-**Last modified:** 2026-05-29T12:00:00Z
-**Status:** Docs Chain Phases 1–3 plus the Phase-4 config loader + CLI IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` + `internal/config` + `internal/state` + `internal/runner` + `cmd/docs_chain` — `go test -race ./...` passes). The Phase-4 fsnotify `watch` daemon and Phases 5–7 remain PLANNED. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
+**Revision:** 4
+**Last modified:** 2026-05-31T12:00:00Z
+**Status:** Docs Chain Phases 1–3 plus the Phase-4 config loader + CLI IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` + `internal/config` + `internal/state` + `internal/runner` + `cmd/docs_chain` — `go test -race ./...` passes). The first downstream consumer (Herald) has wired a full 66-doc Markdown→HTML/PDF/DOCX corpus via `exec:` transforms and `verify`s exit 0 across it (see [`docs/USE_CASE_CATALOGUE.md` Appendix Z](docs/USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald)). The Phase-4 fsnotify `watch` daemon and Phases 5–7 remain PLANNED. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 
 ---
@@ -117,7 +117,7 @@ pages describe their DESIGNED contract. `docs_chain watch` is not wired; use
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | In-depth system architecture — DAG model, content-hash detection, early-cutoff, Kahn propagation, bidirectional sync authority + conflicts, atomicity/crash-safety, SQLite integration. Mermaid + ASCII diagrams. |
 | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | End-to-end adoption guide — prerequisites, build, init `.docs_chain/`, define a context, run `sync`, the watch daemon, conflict resolution, CI integration. |
 | [`docs/CONFIG_SCHEMA.md`](docs/CONFIG_SCHEMA.md) | Formal per-context YAML reference — every field, type, allowed values, defaults, validation rules; annotated `derive-from` + `sync` examples. |
-| [`docs/USE_CASE_CATALOGUE.md`](docs/USE_CASE_CATALOGUE.md) | Living registry of 8 ready-to-use chain recipes (issues, fixed, status, roster/corpus, changelog, README doc-link, universal markdown-export, CONTINUATION). |
+| [`docs/USE_CASE_CATALOGUE.md`](docs/USE_CASE_CATALOGUE.md) | Living registry of 8 ready-to-use chain recipes (issues, fixed, status, roster/corpus, changelog, README doc-link, universal markdown-export, CONTINUATION), plus **Appendix Z** — a worked, verify-green consumer example (Herald) showing the relative-asset-stable `exec:` export pattern. |
 | [`docs/CONSTITUTION_INTEGRATION.md`](docs/CONSTITUTION_INTEGRATION.md) | How the constitution submodule makes Docs Chain available to every consuming project — inheritance model, config discovery, the §11.4.x anchors it satisfies, what a project gets for free vs must register. |
 
 ## Quick start (CLI — Phase 4)

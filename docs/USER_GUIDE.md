@@ -1,8 +1,8 @@
 # Docs Chain — User Guide
 
-**Revision:** 2
-**Last modified:** 2026-05-29T12:00:00Z
-**Status:** The Phase 1–3 engine plus the Phase-4 config loader + CLI (`doctor` / `sync` / `verify` / `graph`) are IMPLEMENTED + tested (`go test -race ./...` passes); the built `docs_chain` binary runs these subcommands today. The fsnotify `watch` daemon (§8) remains PLANNED. See status tags per section.
+**Revision:** 3
+**Last modified:** 2026-05-31T12:00:00Z
+**Status:** The Phase 1–3 engine plus the Phase-4 config loader + CLI (`doctor` / `sync` / `verify` / `graph`) are IMPLEMENTED + tested (`go test -race ./...` passes); the built `docs_chain` binary runs these subcommands today, and the first downstream consumer (Herald) has wired a 66-doc corpus that `verify`s exit 0. The fsnotify `watch` daemon (§8) remains PLANNED. See status tags per section.
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -44,7 +44,7 @@ requires (see [`USE_CASE_CATALOGUE.md`](USE_CASE_CATALOGUE.md)).
 
 ## 2. Prerequisites
 
-**Status: PLANNED (Phase 4).**
+**Status: IMPLEMENTED.**
 
 | Requirement | Why |
 |-------------|-----|
@@ -61,7 +61,8 @@ rewrite of your current generators is required to start.
 
 ## 3. Install / build
 
-**Status: PLANNED (Phase 1 build / Phase 6 submodule distribution).**
+**Status: IMPLEMENTED (build from a checkout — §3.2); submodule
+distribution PLANNED (Phase 6, operator-gated — §3.1).**
 
 ### 3.1 As a consuming-project submodule (post Phase 6)
 
@@ -137,11 +138,21 @@ common chains (issues, fixed, status, roster, changelog, README
 doc-link, CONTINUATION) are in
 [`USE_CASE_CATALOGUE.md`](USE_CASE_CATALOGUE.md).
 
+If you wire your existing pandoc/weasyprint export pipeline via `exec:`
+transforms and your docs reference **relative** assets (`--css`, `<img
+src="...">`), read
+[`USE_CASE_CATALOGUE.md` Appendix Z](USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald)
+first — it is the worked, verify-green pattern (from the Herald consumer)
+for keeping relative-asset exports byte-stable under `verify`. Short
+version: pass each doc's real directory as a trailing `args:` entry and
+`cd` into it in the wrapper, because Docs Chain stages inputs to temp
+files with cwd = projectRoot.
+
 ---
 
 ## 6. Register nodes + edges (rules of thumb)
 
-**Status: PLANNED (Phase 4).**
+**Status: IMPLEMENTED.**
 
 - Every artefact you want kept in sync is a **node** with a unique id and
   a `path`.
@@ -200,7 +211,9 @@ Stop it with Ctrl-C. The daemon uses fsnotify (via
 
 ## 9. Interpret and resolve conflicts
 
-**Status: PLANNED (Phase 3 conflict semantics / Phase 4 surfacing).**
+**Status: IMPLEMENTED (Phase 3 conflict semantics + Phase 4 CLI surfacing
+— `sync` exits 2 and `verify` reports `CONFLICT` on a both-dirty `sync`
+pair).**
 
 A conflict (exit 2) means **both** sides of a `sync` edge changed since
 the last sync — for example, `Issues.md` was hand-edited AND
@@ -252,7 +265,7 @@ docs_chain doctor         # validate all contexts + state integrity
 
 ## 11. Troubleshooting
 
-**Status: PLANNED (Phase 4 — diagnostics).**
+**Status: IMPLEMENTED.**
 
 | Symptom | Cause | Resolution |
 |---------|-------|------------|

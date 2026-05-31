@@ -241,18 +241,20 @@
 <h1 class="title">USER_GUIDE</h1>
 </header>
 <h1 id="docs-chain-user-guide">Docs Chain — User Guide</h1>
-<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> The Phase 1–3 engine plus
+<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
+2026-05-31T12:00:00Z <strong>Status:</strong> The Phase 1–3 engine plus
 the Phase-4 config loader + CLI (<code>doctor</code> / <code>sync</code>
 / <code>verify</code> / <code>graph</code>) are IMPLEMENTED + tested
 (<code>go test -race ./...</code> passes); the built
-<code>docs_chain</code> binary runs these subcommands today. The
-fsnotify <code>watch</code> daemon (§8) remains PLANNED. See status tags
-per section. <strong>Authority:</strong> Operator mandate 2026-05-29
-(Docs Chain initiative) <strong>Design provenance:</strong>
-authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
-project research tree (<code>docs/research/docs_chain/</code>); this
-document is the self-contained specification.</p>
+<code>docs_chain</code> binary runs these subcommands today, and the
+first downstream consumer (Herald) has wired a 66-doc corpus that
+<code>verify</code>s exit 0. The fsnotify <code>watch</code> daemon (§8)
+remains PLANNED. See status tags per section.
+<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
+initiative) <strong>Design provenance:</strong> authoritative Phase-0
+DESIGN / RESEARCH / PLAN live in the consuming project research tree
+(<code>docs/research/docs_chain/</code>); this document is the
+self-contained specification.</p>
 <hr />
 <h2 id="status-legend">Status legend</h2>
 <p>Per §11.4.6 (no-guessing), every workflow below carries a status
@@ -288,7 +290,7 @@ otherwise requires (see <a
 href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>).</p>
 <hr />
 <h2 id="prerequisites">2. Prerequisites</h2>
-<p><strong>Status: PLANNED (Phase 4).</strong></p>
+<p><strong>Status: IMPLEMENTED.</strong></p>
 <table>
 <colgroup>
 <col style="width: 72%" />
@@ -331,8 +333,8 @@ reference</td>
 no rewrite of your current generators is required to start.</p>
 <hr />
 <h2 id="install-build">3. Install / build</h2>
-<p><strong>Status: PLANNED (Phase 1 build / Phase 6 submodule
-distribution).</strong></p>
+<p><strong>Status: IMPLEMENTED (build from a checkout — §3.2); submodule
+distribution PLANNED (Phase 6, operator-gated — §3.1).</strong></p>
 <h3 id="as-a-consuming-project-submodule-post-phase-6">3.1 As a
 consuming-project submodule (post Phase 6)</h3>
 <div class="sourceCode" id="cb1"><pre
@@ -387,10 +389,21 @@ href="CONFIG_SCHEMA.md"><code>CONFIG_SCHEMA.md</code></a>. Ready-to-use
 recipes for the common chains (issues, fixed, status, roster, changelog,
 README doc-link, CONTINUATION) are in <a
 href="USE_CASE_CATALOGUE.md"><code>USE_CASE_CATALOGUE.md</code></a>.</p>
+<p>If you wire your existing pandoc/weasyprint export pipeline via
+<code>exec:</code> transforms and your docs reference
+<strong>relative</strong> assets (<code>--css</code>,
+<code>&lt;img src="..."&gt;</code>), read <a
+href="USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald"><code>USE_CASE_CATALOGUE.md</code>
+Appendix Z</a> first — it is the worked, verify-green pattern (from the
+Herald consumer) for keeping relative-asset exports byte-stable under
+<code>verify</code>. Short version: pass each doc’s real directory as a
+trailing <code>args:</code> entry and <code>cd</code> into it in the
+wrapper, because Docs Chain stages inputs to temp files with cwd =
+projectRoot.</p>
 <hr />
 <h2 id="register-nodes-edges-rules-of-thumb">6. Register nodes + edges
 (rules of thumb)</h2>
-<p><strong>Status: PLANNED (Phase 4).</strong></p>
+<p><strong>Status: IMPLEMENTED.</strong></p>
 <ul>
 <li>Every artefact you want kept in sync is a <strong>node</strong> with
 a unique id and a <code>path</code>.</li>
@@ -467,8 +480,10 @@ required.</p>
 <hr />
 <h2 id="interpret-and-resolve-conflicts">9. Interpret and resolve
 conflicts</h2>
-<p><strong>Status: PLANNED (Phase 3 conflict semantics / Phase 4
-surfacing).</strong></p>
+<p><strong>Status: IMPLEMENTED (Phase 3 conflict semantics + Phase 4 CLI
+surfacing — <code>sync</code> exits 2 and <code>verify</code> reports
+<code>CONFLICT</code> on a both-dirty <code>sync</code>
+pair).</strong></p>
 <p>A conflict (exit 2) means <strong>both</strong> sides of a
 <code>sync</code> edge changed since the last sync — for example,
 <code>Issues.md</code> was hand-edited AND
@@ -508,7 +523,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docs_chain</span> doctor         <span class="co"># validate all contexts + state integrity</span></span></code></pre></div>
 <hr />
 <h2 id="troubleshooting">11. Troubleshooting</h2>
-<p><strong>Status: PLANNED (Phase 4 — diagnostics).</strong></p>
+<p><strong>Status: IMPLEMENTED.</strong></p>
 <table>
 <colgroup>
 <col style="width: 32%" />

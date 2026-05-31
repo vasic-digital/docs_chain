@@ -1,8 +1,8 @@
 # Docs Chain — Use-Case Catalogue
 
-**Revision:** 2
-**Last modified:** 2026-05-29T12:00:00Z
-**Status:** Living registry. Every recipe below is a DESIGNED context. Engine support is PLANNED (Phases 1–4); ATMOSphere wiring is PLANNED (Phase 7). See per-recipe status tags.
+**Revision:** 3
+**Last modified:** 2026-05-31T12:00:00Z
+**Status:** Living registry. The Phase 1–4 engine + CLI (`sync`/`verify`/`doctor`/`graph`) is IMPLEMENTED + tested — it processes any context below today. Recipes (a)–(h) are DESIGNED contexts whose *registration into ATMOSphere* is PLANNED (Phase 7); their per-recipe tags reflect that wiring step, not the engine. Appendix Z is a WORKED, registered, verify-green consumer example (Herald). See per-recipe status tags.
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -12,14 +12,18 @@
 
 Per §11.4.6 (no-guessing):
 
-- **PLANNED (Phase N)** — the recipe is designed; engine/wiring lands in
-  Phase N of `PLAN.md`.
-- A recipe is marked **IMPLEMENTED** only once its context is registered
-  and green in a future revision of this file.
+- **PLANNED (Phase N)** — the recipe is designed; its *registration /
+  wiring* lands in Phase N of `PLAN.md`. The Phase 1–4 engine that would
+  process it is already IMPLEMENTED.
+- **IMPLEMENTED** — the context is registered and a real `docs_chain
+  verify` against it exits 0 (see [Appendix Z](#appendix-z--worked-consumer-example-herald) for a worked one).
 
-At the time of writing every recipe is PLANNED. These are ready-to-use
-chain definitions a consuming project can stage now; they are not claims
-that the engine processes them today.
+The Phase 1–4 engine + CLI is built and tested (`go test -race ./...`
+passes; the `docs_chain` binary runs `sync`/`verify`/`doctor`/`graph`
+today). Recipes (a)–(h) below are still tagged **PLANNED (Phase 7)**
+because their *ATMOSphere registration* is the Phase-7 step — NOT because
+the engine cannot process them. They are ready-to-use chain definitions a
+consuming project can stage and run now.
 
 This file is a **living registry** — new projects extend it by appending
 a recipe section in the same shape (purpose · members · edge directions ·
@@ -39,8 +43,10 @@ transform · mandate satisfied · script superseded · YAML).
 | (f) | [README doc-link chain](#f-readme-doc-link-chain) | §11.4.57 · §11.4.59 | `update_readme_doc_links.sh`, `sync_readme_export.sh` |
 | (g) | [Universal markdown-export chain](#g-universal-markdown-export-chain) | §11.4.65 | `sync_all_markdown_exports.sh` |
 | (h) | [CONTINUATION chain](#h-continuation-chain) | §12.10 · §11.4.44 | (manual) `sync_issues_docs.sh` CONTINUATION stage |
+| (Z) | [Worked consumer example (Herald) — relative-asset-stable exec exports](#appendix-z--worked-consumer-example-herald) | §11.4.65 · §11.4.50 | Herald `scripts/export_docs.sh` (66-doc corpus) |
 
-**Catalogued scenario count: 8.**
+**Catalogued scenario count: 8** designed recipes **+ 1 worked consumer
+appendix (Z, IMPLEMENTED / verify-green)**.
 
 ---
 
@@ -401,3 +407,131 @@ appending a section in the exact shape above:
 
 Keep the [catalogue index](#catalogue-index) table and the **catalogued
 scenario count** in sync when adding a recipe.
+
+---
+
+## Appendix Z — Worked consumer example (Herald): relative-asset-stable `exec:` exports
+
+**Status: IMPLEMENTED — registered + `docs_chain verify` exit 0 across a
+66-doc corpus.**
+
+This is the canonical answer to *"how do I keep relative-asset exports
+(CSS / `<img>`) verify-stable?"* — the first real downstream consumer
+([Herald](https://github.com/vasic-digital/Herald)) discovered the
+pattern, and it is non-obvious enough to capture here. Herald wired its
+full 66-doc Markdown→HTML/PDF/DOCX corpus to the Phase-4 engine via
+per-directory `exec:` transform wrappers that replicate its exact pandoc
+flags and `SOURCE_DATE_EPOCH`, then proved it end-to-end (`verify` exit 0
+across all 66 docs, HTML byte-identical to the prior `export_docs.sh`
+output).
+
+### The non-obvious problem
+
+During `sync` and `verify`, Docs Chain **stages each input to a temp
+file** and runs the `exec:` command with **cwd = projectRoot** (see
+`internal/runner/runner.go` `execTransform`: inputs are written to
+`os.CreateTemp` paths, the staged output temp path is appended, and
+`cmd.Dir = projectRoot`). During `verify` the output is additionally
+redirected to a per-run `docs_chain_verify_*` temp dir.
+
+That means a wrapper that resolves a **relative** asset — `--css
+print.css`, or a Markdown `<img src="../assets/logo.png">` that pandoc
+resolves relative to the *input file's* directory — will resolve it
+**differently** between:
+
+- the human's ad-hoc run (cwd = the doc's real directory), and
+- the Docs Chain run (input is a temp file; cwd = projectRoot).
+
+The two renders then differ byte-for-byte, so `verify` falsely reports
+drift even though nothing meaningful changed. A non-deterministic /
+context-dependent transform is a §11.4.50 violation.
+
+### The fix — pass the doc's real directory as an `args:` entry
+
+Give each per-directory transform variant the doc's **real directory** as
+a trailing `args:` value. Docs Chain appends `args:` *after* the staged
+input/output temp paths (CONFIG_SCHEMA §5.2), so the wrapper receives:
+
+```
+$1 = staged input temp path   (the .md content, in a temp file)
+$2 = staged output temp path   (where the wrapper MUST write its result)
+$3 = the doc's real directory  (passed via args:, so relative assets resolve)
+```
+
+The wrapper `cd`s into `$3` (the real dir) before invoking pandoc, so
+relative `--css` / `<img>` paths resolve **identically in `sync` and
+`verify`** regardless of where the input was staged or what cwd Docs Chain
+used.
+
+### Minimal context snippet
+
+One transform variant per source directory (because the real dir differs
+per directory; docs in the same directory share a variant):
+
+```yaml
+# .docs_chain/contexts/corpus.yaml  (excerpt)
+context: corpus
+description: Markdown corpus -> html, relative-asset-stable via exec wrappers
+nodes:
+  guide_md:   { kind: markdown, path: docs/guides/SETUP.md }
+  guide_html: { kind: html,     path: docs/guides/SETUP.html }
+  # ... one md+html (+pdf/docx) node pair per corpus doc ...
+edges:
+  - { type: derive-from, from: guide_md, to: guide_html, transform: md2html_docs_guides }
+transforms:
+  # one variant per directory; the trailing args entry is that dir's real path
+  md2html_docs_guides:
+    { exec: "scripts/dc/md2html.sh", args: ["docs/guides"] }
+  md2html_root:
+    { exec: "scripts/dc/md2html.sh", args: ["."] }
+```
+
+### Minimal wrapper shape
+
+```bash
+#!/usr/bin/env bash
+# scripts/dc/md2html.sh — Docs Chain exec wrapper (md -> html)
+# Args, in order Docs Chain supplies them:
+#   $1 staged input temp (.md)   $2 staged output temp (.html)
+#   $3 the doc's REAL directory  (passed via the context's args:)
+set -euo pipefail
+in="$1"; out="$2"; realdir="$3"
+
+# Deterministic output (§11.4.50): pin the embedded timestamp.
+export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-0}"
+
+# cd into the doc's real directory so relative --css / <img> resolve the
+# SAME way Docs Chain stages the input to a temp path with cwd=projectRoot.
+cd "$realdir"
+
+pandoc "$in" \
+  --from gfm --to html5 --standalone \
+  --css print.css \
+  -o "$out"
+# Write ONLY to $out (the staged temp); Docs Chain owns the atomic rename.
+```
+
+### Why this is verify-stable
+
+- Inputs are content, not paths — the staged temp holds the same bytes the
+  real file holds, so the hash is identical.
+- Relative assets resolve against `$realdir` (the real dir) in **both**
+  `sync` and `verify`, so the rendered output is byte-identical across
+  runs.
+- `SOURCE_DATE_EPOCH` (or any other embedded-timestamp pin) removes the
+  one remaining source of non-determinism pandoc/weasyprint otherwise
+  inject.
+
+With those three in place, `docs_chain verify --all` is a true §11.4.50
+deterministic sink-side gate: Herald's 66-doc corpus reports exit 0 with
+HTML byte-identical to its pre-existing `export_docs.sh` output. The same
+shape applies to `weasyprint-pdf` and `pandoc-docx` exec wrappers — pass
+the real dir, `cd` into it, pin the timestamp.
+
+> **Builtin alternative.** The `pandoc-html` / `weasyprint-pdf` /
+> `pandoc-docx` builtins (used by the `self-docs` dogfood context) avoid
+> this entirely for the *default* flag set — they need no per-directory
+> `args:`. Reach for the `exec:` per-directory pattern only when you must
+> replicate a project's *exact* existing pandoc/weasyprint invocation
+> (custom `--css`, filters, templates, `SOURCE_DATE_EPOCH`) byte-for-byte,
+> as Herald did to keep its prior output identical.

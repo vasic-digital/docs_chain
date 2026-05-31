@@ -177,13 +177,16 @@
 </header>
 <h1 id="docs-chain-helixconstitution-integration">Docs Chain —
 HelixConstitution Integration</h1>
-<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> Design documentation —
-DESCRIBES the integration. The integration itself is PLANNED (Phase 6)
-and OPERATOR-GATED. This document does NOT implement it.
-<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
-initiative) <strong>Design provenance:</strong> authoritative Phase-0
-DESIGN / RESEARCH / PLAN live in the consuming project research tree
+<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
+2026-05-31T12:00:00Z <strong>Status:</strong> Design documentation —
+DESCRIBES the integration. The Phase-4 config loader + CLI it references
+are now IMPLEMENTED (and a first consumer, Herald, has wired a
+verify-green 66-doc corpus); the constitution-submodule integration
+itself is still PLANNED (Phase 6) and OPERATOR-GATED. This document does
+NOT implement that integration. <strong>Authority:</strong> Operator
+mandate 2026-05-29 (Docs Chain initiative) <strong>Design
+provenance:</strong> authoritative Phase-0 DESIGN / RESEARCH / PLAN live
+in the consuming project research tree
 (<code>docs/research/docs_chain/</code>); this document is the
 self-contained specification.</p>
 <hr />
@@ -241,8 +244,10 @@ path the constitution exposes (the same pattern §11.4.80 uses for the
 copied).</p>
 <hr />
 <h2 id="config-discovery-convention">3. Config-discovery convention</h2>
-<p><strong>Status: PLANNED (Phase 4 loader + Phase 6
-distribution).</strong></p>
+<p><strong>Status: IMPLEMENTED (Phase 4 loader); Phase 6 distribution
+PLANNED (operator-gated).</strong> The loader resolves and validates
+contexts today; only the submodule <em>distribution</em> of the engine
+remains a Phase-6 step.</p>
 <p>The discovery convention a consuming project follows out of the
 box:</p>
 <ol type="1">
@@ -396,6 +401,16 @@ byte-stable transforms</td>
 (e.g. the operator still writes the §11.4.44 revision header into the
 source); it replaces the <strong>mechanical sync</strong> the anchor
 requires.</p>
+<p><strong>Worked consumer proof.</strong> The first downstream consumer
+(Herald) wired its full 66-doc Markdown→HTML/PDF/DOCX corpus to this
+engine — the §11.4.65 universal-export anchor enforced by
+<code>docs_chain verify</code> (exit 0 across 66 docs, HTML
+byte-identical to the prior ad-hoc exporter). The non-obvious part —
+keeping <strong>relative-asset</strong> exports byte-stable under
+<code>verify</code> when Docs Chain stages inputs to temp files with cwd
+= projectRoot — is captured as the canonical pattern in <a
+href="USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald"><code>USE_CASE_CATALOGUE.md</code>
+Appendix Z</a>.</p>
 <hr />
 <h2 id="what-a-consuming-project-gets-for-free-vs-must-register">5. What
 a consuming project gets for free vs must register</h2>
@@ -409,9 +424,10 @@ lands)</h3>
 <code>colorize-html</code>, <code>members-fingerprint</code>,
 <code>gen-summary</code>, <code>md-to-sqlite</code> /
 <code>sqlite-to-md</code> adapters).</li>
-<li>The CLI (<code>sync</code> / <code>verify</code> /
-<code>watch</code> / <code>graph</code> / <code>doctor</code>) and
-exit-code contract.</li>
+<li>The CLI and exit-code contract: <code>sync</code> /
+<code>verify</code> / <code>graph</code> / <code>doctor</code> are
+IMPLEMENTED today; <code>watch</code> (fsnotify daemon) is PLANNED
+(Phase 4 — not yet wired).</li>
 <li>Atomic-commit + rollback + conflict semantics (ARCHITECTURE §5,
 §8).</li>
 <li>Content-hash change detection (§11.4.86 not-mtime).</li>

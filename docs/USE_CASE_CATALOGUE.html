@@ -242,27 +242,41 @@
 </header>
 <h1 id="docs-chain-use-case-catalogue">Docs Chain — Use-Case
 Catalogue</h1>
-<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> Living registry. Every
-recipe below is a DESIGNED context. Engine support is PLANNED (Phases
-1–4); ATMOSphere wiring is PLANNED (Phase 7). See per-recipe status
-tags. <strong>Authority:</strong> Operator mandate 2026-05-29 (Docs
-Chain initiative) <strong>Design provenance:</strong> authoritative
-Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research
-tree (<code>docs/research/docs_chain/</code>); this document is the
+<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
+2026-05-31T12:00:00Z <strong>Status:</strong> Living registry. The Phase
+1–4 engine + CLI
+(<code>sync</code>/<code>verify</code>/<code>doctor</code>/<code>graph</code>)
+is IMPLEMENTED + tested — it processes any context below today. Recipes
+(a)–(h) are DESIGNED contexts whose <em>registration into
+ATMOSphere</em> is PLANNED (Phase 7); their per-recipe tags reflect that
+wiring step, not the engine. Appendix Z is a WORKED, registered,
+verify-green consumer example (Herald). See per-recipe status tags.
+<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
+initiative) <strong>Design provenance:</strong> authoritative Phase-0
+DESIGN / RESEARCH / PLAN live in the consuming project research tree
+(<code>docs/research/docs_chain/</code>); this document is the
 self-contained specification.</p>
 <hr />
 <h2 id="status-legend">Status legend</h2>
 <p>Per §11.4.6 (no-guessing):</p>
 <ul>
-<li><strong>PLANNED (Phase N)</strong> — the recipe is designed;
-engine/wiring lands in Phase N of <code>PLAN.md</code>.</li>
-<li>A recipe is marked <strong>IMPLEMENTED</strong> only once its
-context is registered and green in a future revision of this file.</li>
+<li><strong>PLANNED (Phase N)</strong> — the recipe is designed; its
+<em>registration / wiring</em> lands in Phase N of <code>PLAN.md</code>.
+The Phase 1–4 engine that would process it is already IMPLEMENTED.</li>
+<li><strong>IMPLEMENTED</strong> — the context is registered and a real
+<code>docs_chain verify</code> against it exits 0 (see <a
+href="#appendix-z--worked-consumer-example-herald">Appendix Z</a> for a
+worked one).</li>
 </ul>
-<p>At the time of writing every recipe is PLANNED. These are
-ready-to-use chain definitions a consuming project can stage now; they
-are not claims that the engine processes them today.</p>
+<p>The Phase 1–4 engine + CLI is built and tested
+(<code>go test -race ./...</code> passes; the <code>docs_chain</code>
+binary runs
+<code>sync</code>/<code>verify</code>/<code>doctor</code>/<code>graph</code>
+today). Recipes (a)–(h) below are still tagged <strong>PLANNED (Phase
+7)</strong> because their <em>ATMOSphere registration</em> is the
+Phase-7 step — NOT because the engine cannot process them. They are
+ready-to-use chain definitions a consuming project can stage and run
+now.</p>
 <p>This file is a <strong>living registry</strong> — new projects extend
 it by appending a recipe section in the same shape (purpose · members ·
 edge directions · transform · mandate satisfied · script superseded ·
@@ -338,9 +352,18 @@ markdown-export chain</a></td>
 <td>§12.10 · §11.4.44</td>
 <td>(manual) <code>sync_issues_docs.sh</code> CONTINUATION stage</td>
 </tr>
+<tr>
+<td>(Z)</td>
+<td><a href="#appendix-z--worked-consumer-example-herald">Worked
+consumer example (Herald) — relative-asset-stable exec exports</a></td>
+<td>§11.4.65 · §11.4.50</td>
+<td>Herald <code>scripts/export_docs.sh</code> (66-doc corpus)</td>
+</tr>
 </tbody>
 </table>
-<p><strong>Catalogued scenario count: 8.</strong></p>
+<p><strong>Catalogued scenario count: 8</strong> designed recipes
+<strong>+ 1 worked consumer appendix (Z, IMPLEMENTED /
+verify-green)</strong>.</p>
 <hr />
 <h2 id="a-issues-chain">(a) Issues chain</h2>
 <p><strong>Status: PLANNED (Phase 7).</strong></p>
@@ -710,5 +733,128 @@ enforces.</li>
 <p>Keep the <a href="#catalogue-index">catalogue index</a> table and the
 <strong>catalogued scenario count</strong> in sync when adding a
 recipe.</p>
+<hr />
+<h2
+id="appendix-z-worked-consumer-example-herald-relative-asset-stable-exec-exports">Appendix
+Z — Worked consumer example (Herald): relative-asset-stable
+<code>exec:</code> exports</h2>
+<p><strong>Status: IMPLEMENTED — registered +
+<code>docs_chain verify</code> exit 0 across a 66-doc
+corpus.</strong></p>
+<p>This is the canonical answer to <em>“how do I keep relative-asset
+exports (CSS / <code>&lt;img&gt;</code>) verify-stable?”</em> — the
+first real downstream consumer (<a
+href="https://github.com/vasic-digital/Herald">Herald</a>) discovered
+the pattern, and it is non-obvious enough to capture here. Herald wired
+its full 66-doc Markdown→HTML/PDF/DOCX corpus to the Phase-4 engine via
+per-directory <code>exec:</code> transform wrappers that replicate its
+exact pandoc flags and <code>SOURCE_DATE_EPOCH</code>, then proved it
+end-to-end (<code>verify</code> exit 0 across all 66 docs, HTML
+byte-identical to the prior <code>export_docs.sh</code> output).</p>
+<h3 id="the-non-obvious-problem">The non-obvious problem</h3>
+<p>During <code>sync</code> and <code>verify</code>, Docs Chain
+<strong>stages each input to a temp file</strong> and runs the
+<code>exec:</code> command with <strong>cwd = projectRoot</strong> (see
+<code>internal/runner/runner.go</code> <code>execTransform</code>:
+inputs are written to <code>os.CreateTemp</code> paths, the staged
+output temp path is appended, and <code>cmd.Dir = projectRoot</code>).
+During <code>verify</code> the output is additionally redirected to a
+per-run <code>docs_chain_verify_*</code> temp dir.</p>
+<p>That means a wrapper that resolves a <strong>relative</strong> asset
+— <code>--css print.css</code>, or a Markdown
+<code>&lt;img src="../assets/logo.png"&gt;</code> that pandoc resolves
+relative to the <em>input file’s</em> directory — will resolve it
+<strong>differently</strong> between:</p>
+<ul>
+<li>the human’s ad-hoc run (cwd = the doc’s real directory), and</li>
+<li>the Docs Chain run (input is a temp file; cwd = projectRoot).</li>
+</ul>
+<p>The two renders then differ byte-for-byte, so <code>verify</code>
+falsely reports drift even though nothing meaningful changed. A
+non-deterministic / context-dependent transform is a §11.4.50
+violation.</p>
+<h3 id="the-fix-pass-the-docs-real-directory-as-an-args-entry">The fix —
+pass the doc’s real directory as an <code>args:</code> entry</h3>
+<p>Give each per-directory transform variant the doc’s <strong>real
+directory</strong> as a trailing <code>args:</code> value. Docs Chain
+appends <code>args:</code> <em>after</em> the staged input/output temp
+paths (CONFIG_SCHEMA §5.2), so the wrapper receives:</p>
+<pre><code>$1 = staged input temp path   (the .md content, in a temp file)
+$2 = staged output temp path   (where the wrapper MUST write its result)
+$3 = the doc&#39;s real directory  (passed via args:, so relative assets resolve)</code></pre>
+<p>The wrapper <code>cd</code>s into <code>$3</code> (the real dir)
+before invoking pandoc, so relative <code>--css</code> /
+<code>&lt;img&gt;</code> paths resolve <strong>identically in
+<code>sync</code> and <code>verify</code></strong> regardless of where
+the input was staged or what cwd Docs Chain used.</p>
+<h3 id="minimal-context-snippet">Minimal context snippet</h3>
+<p>One transform variant per source directory (because the real dir
+differs per directory; docs in the same directory share a variant):</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .docs_chain/contexts/corpus.yaml  (excerpt)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span><span class="at"> corpus</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> Markdown corpus -&gt; html, relative-asset-stable via exec wrappers</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">nodes</span><span class="kw">:</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">guide_md</span><span class="kw">:</span><span class="at">   </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> markdown</span><span class="kw">,</span><span class="at"> </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/guides/SETUP.md </span><span class="kw">}</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">guide_html</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> html</span><span class="kw">,</span><span class="at">     </span><span class="fu">path</span><span class="kw">:</span><span class="at"> docs/guides/SETUP.html </span><span class="kw">}</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">  # ... one md+html (+pdf/docx) node pair per corpus doc ...</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">edges</span><span class="kw">:</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> derive-from</span><span class="kw">,</span><span class="at"> </span><span class="fu">from</span><span class="kw">:</span><span class="at"> guide_md</span><span class="kw">,</span><span class="at"> </span><span class="fu">to</span><span class="kw">:</span><span class="at"> guide_html</span><span class="kw">,</span><span class="at"> </span><span class="fu">transform</span><span class="kw">:</span><span class="at"> md2html_docs_guides </span><span class="kw">}</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">transforms</span><span class="kw">:</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">  # one variant per directory; the trailing args entry is that dir&#39;s real path</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">md2html_docs_guides</span><span class="kw">:</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;scripts/dc/md2html.sh&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;docs/guides&quot;</span><span class="kw">]</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">md2html_root</span><span class="kw">:</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">{</span><span class="at"> </span><span class="fu">exec</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;scripts/dc/md2html.sh&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;.&quot;</span><span class="kw">]</span><span class="at"> </span><span class="kw">}</span></span></code></pre></div>
+<h3 id="minimal-wrapper-shape">Minimal wrapper shape</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/dc/md2html.sh — Docs Chain exec wrapper (md -&gt; html)</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Args, in order Docs Chain supplies them:</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   $1 staged input temp (.md)   $2 staged output temp (.html)</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   $3 the doc&#39;s REAL directory  (passed via the context&#39;s args:)</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="va">in</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span><span class="kw">;</span> <span class="va">out</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span><span class="kw">;</span> <span class="va">realdir</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$3</span><span class="st">&quot;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Deterministic output (§11.4.50): pin the embedded timestamp.</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">SOURCE_DATE_EPOCH</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${SOURCE_DATE_EPOCH</span><span class="op">:-</span>0<span class="va">}</span><span class="st">&quot;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># cd into the doc&#39;s real directory so relative --css / &lt;img&gt; resolve the</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># SAME way Docs Chain stages the input to a temp path with cwd=projectRoot.</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$realdir</span><span class="st">&quot;</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="ex">pandoc</span> <span class="st">&quot;</span><span class="va">$in</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">--from</span> gfm <span class="at">--to</span> html5 <span class="at">--standalone</span> <span class="dt">\</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">--css</span> print.css <span class="dt">\</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">-o</span> <span class="st">&quot;</span><span class="va">$out</span><span class="st">&quot;</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Write ONLY to $out (the staged temp); Docs Chain owns the atomic rename.</span></span></code></pre></div>
+<h3 id="why-this-is-verify-stable">Why this is verify-stable</h3>
+<ul>
+<li>Inputs are content, not paths — the staged temp holds the same bytes
+the real file holds, so the hash is identical.</li>
+<li>Relative assets resolve against <code>$realdir</code> (the real dir)
+in <strong>both</strong> <code>sync</code> and <code>verify</code>, so
+the rendered output is byte-identical across runs.</li>
+<li><code>SOURCE_DATE_EPOCH</code> (or any other embedded-timestamp pin)
+removes the one remaining source of non-determinism pandoc/weasyprint
+otherwise inject.</li>
+</ul>
+<p>With those three in place, <code>docs_chain verify --all</code> is a
+true §11.4.50 deterministic sink-side gate: Herald’s 66-doc corpus
+reports exit 0 with HTML byte-identical to its pre-existing
+<code>export_docs.sh</code> output. The same shape applies to
+<code>weasyprint-pdf</code> and <code>pandoc-docx</code> exec wrappers —
+pass the real dir, <code>cd</code> into it, pin the timestamp.</p>
+<blockquote>
+<p><strong>Builtin alternative.</strong> The <code>pandoc-html</code> /
+<code>weasyprint-pdf</code> / <code>pandoc-docx</code> builtins (used by
+the <code>self-docs</code> dogfood context) avoid this entirely for the
+<em>default</em> flag set — they need no per-directory
+<code>args:</code>. Reach for the <code>exec:</code> per-directory
+pattern only when you must replicate a project’s <em>exact</em> existing
+pandoc/weasyprint invocation (custom <code>--css</code>, filters,
+templates, <code>SOURCE_DATE_EPOCH</code>) byte-for-byte, as Herald did
+to keep its prior output identical.</p>
+</blockquote>
 </body>
 </html>

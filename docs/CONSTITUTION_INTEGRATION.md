@@ -1,8 +1,8 @@
 # Docs Chain — HelixConstitution Integration
 
-**Revision:** 2
-**Last modified:** 2026-05-29T12:00:00Z
-**Status:** Design documentation — DESCRIBES the integration. The integration itself is PLANNED (Phase 6) and OPERATOR-GATED. This document does NOT implement it.
+**Revision:** 3
+**Last modified:** 2026-05-31T12:00:00Z
+**Status:** Design documentation — DESCRIBES the integration. The Phase-4 config loader + CLI it references are now IMPLEMENTED (and a first consumer, Herald, has wired a verify-green 66-doc corpus); the constitution-submodule integration itself is still PLANNED (Phase 6) and OPERATOR-GATED. This document does NOT implement that integration.
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -72,7 +72,9 @@ path the constitution exposes (the same pattern §11.4.80 uses for the
 
 ## 3. Config-discovery convention
 
-**Status: PLANNED (Phase 4 loader + Phase 6 distribution).**
+**Status: IMPLEMENTED (Phase 4 loader); Phase 6 distribution PLANNED
+(operator-gated).** The loader resolves and validates contexts today; only
+the submodule *distribution* of the engine remains a Phase-6 step.
 
 The discovery convention a consuming project follows out of the box:
 
@@ -120,6 +122,15 @@ Docs Chain does NOT replace the authoring discipline of any anchor (e.g.
 the operator still writes the §11.4.44 revision header into the source);
 it replaces the **mechanical sync** the anchor requires.
 
+**Worked consumer proof.** The first downstream consumer (Herald) wired
+its full 66-doc Markdown→HTML/PDF/DOCX corpus to this engine — the §11.4.65
+universal-export anchor enforced by `docs_chain verify` (exit 0 across 66
+docs, HTML byte-identical to the prior ad-hoc exporter). The non-obvious
+part — keeping **relative-asset** exports byte-stable under `verify` when
+Docs Chain stages inputs to temp files with cwd = projectRoot — is
+captured as the canonical pattern in
+[`USE_CASE_CATALOGUE.md` Appendix Z](USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald).
+
 ---
 
 ## 5. What a consuming project gets for free vs must register
@@ -129,8 +140,9 @@ it replaces the **mechanical sync** the anchor requires.
 - The Docs Chain engine (Go binary + builtins: `pandoc-html`,
   `weasyprint-pdf`, `colorize-html`, `members-fingerprint`,
   `gen-summary`, `md-to-sqlite` / `sqlite-to-md` adapters).
-- The CLI (`sync` / `verify` / `watch` / `graph` / `doctor`) and exit-code
-  contract.
+- The CLI and exit-code contract: `sync` / `verify` / `graph` / `doctor`
+  are IMPLEMENTED today; `watch` (fsnotify daemon) is PLANNED (Phase 4 —
+  not yet wired).
 - Atomic-commit + rollback + conflict semantics (ARCHITECTURE §5, §8).
 - Content-hash change detection (§11.4.86 not-mtime).
 - The use-case recipe catalogue (this submodule's
