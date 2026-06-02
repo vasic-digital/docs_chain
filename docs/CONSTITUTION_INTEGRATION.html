@@ -425,9 +425,10 @@ lands)</h3>
 <code>gen-summary</code>, <code>md-to-sqlite</code> /
 <code>sqlite-to-md</code> adapters).</li>
 <li>The CLI and exit-code contract: <code>sync</code> /
-<code>verify</code> / <code>graph</code> / <code>doctor</code> are
-IMPLEMENTED today; <code>watch</code> (fsnotify daemon) is PLANNED
-(Phase 4 — not yet wired).</li>
+<code>verify</code> / <code>graph</code> / <code>doctor</code> /
+<code>watch</code> (fsnotify daemon) are ALL IMPLEMENTED today (the
+<code>watch</code> daemon is proven by the full-automation test
+<code>cmd/docs_chain/watch_test.go</code>).</li>
 <li>Atomic-commit + rollback + conflict semantics (ARCHITECTURE §5,
 §8).</li>
 <li>Content-hash change detection (§11.4.86 not-mtime).</li>
@@ -452,8 +453,11 @@ chains.</li>
 <hr />
 <h2 id="out-of-the-box-adoption-checklist">6. Out-of-the-box adoption
 checklist</h2>
-<p><strong>Status: PLANNED — usable once Phase 6 distribution + Phase 4
-CLI land.</strong></p>
+<p><strong>Status: PARTIALLY USABLE TODAY — the Phase-4 CLI has landed,
+so steps 2–6 work now against a by-reference Projects-root sibling
+checkout (as Herald does); only the Phase-6 constitution-submodule
+distribution (a turnkey <code>git submodule</code> pointer) remains
+PLANNED + OPERATOR-GATED.</strong></p>
 <p>A project follows these steps to start using Docs Chain:</p>
 <ol type="1">
 <li>Inherit the constitution submodule (already done by every governed

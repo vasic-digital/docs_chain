@@ -253,12 +253,19 @@ the Phase-4 config loader + CLI IMPLEMENTED + tested
 <code>exec:</code> transforms and <code>verify</code>s exit 0 across it
 (see <a
 href="docs/USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald"><code>docs/USE_CASE_CATALOGUE.md</code>
-Appendix Z</a>). The Phase-4 fsnotify <code>watch</code> daemon and
-Phases 5–7 remain PLANNED. This README and the docs under
-<code>docs/</code> mark each capability IMPLEMENTED vs PLANNED and do
-not claim working behaviour that is not yet built (§11.4.6).
-<strong>Authority:</strong> Operator mandate 2026-05-29 (Docs Chain
-initiative)</p>
+Appendix Z</a>). The fsnotify <code>watch</code> daemon, the generic
+bidirectional <code>md-to-sqlite</code> / <code>sqlite-to-md</code> DB
+builtins, the <code>colorize-html</code> (§11.4.23) builtin, and the
+comprehensive test suite (Phase 5 — real-binary subprocess e2e + watch
+full-automation + <code>scripts/e2e.sh</code>) are now
+<strong>IMPLEMENTED + tested</strong> (<code>go test -race ./...</code>
+passes; <code>scripts/e2e.sh</code> is GREEN, 20/0). Phase 6
+(constitution-submodule distribution) + Phase 7 (ATMOSphere wiring)
+remain PLANNED — OPERATOR-GATED (remote-repo creation / cross-repo).
+This README and the docs under <code>docs/</code> mark each capability
+IMPLEMENTED vs PLANNED and do not claim working behaviour that is not
+yet built (§11.4.6). <strong>Authority:</strong> Operator mandate
+2026-05-29 (Docs Chain initiative)</p>
 <hr />
 <p>Docs Chain is a universal, Go-implemented, <strong>bidirectional
 document-and-database dependency-propagation engine</strong>. When any
@@ -318,17 +325,31 @@ SQLite-transaction commit.</p>
 </tr>
 <tr>
 <td>4</td>
-<td>Config-driven multi-context + CLI</td>
+<td>Config-driven multi-context + CLI + <code>watch</code> daemon</td>
 <td><strong>IMPLEMENTED + tested</strong> (<code>internal/config</code>,
 <code>internal/state</code>, <code>internal/runner</code>,
 <code>cmd/docs_chain</code> —
-<code>sync</code>/<code>verify</code>/<code>doctor</code>/<code>graph</code>).
-The fsnotify <code>watch</code> daemon remains PLANNED.</td>
+<code>sync</code>/<code>verify</code>/<code>doctor</code>/<code>graph</code>/<code>watch</code>;
+fsnotify daemon proven by <code>cmd/docs_chain/watch_test.go</code>
+full-automation).</td>
+</tr>
+<tr>
+<td>4b</td>
+<td>Generic DB builtins + <code>colorize-html</code></td>
+<td><strong>IMPLEMENTED + tested</strong> — bidirectional
+<code>md-to-sqlite</code>/<code>sqlite-to-md</code> (pure-Go modernc,
+row-level drift, byte-stable round-trip) + <code>colorize-html</code>
+(§11.4.23 cell-color matrix).</td>
 </tr>
 <tr>
 <td>5</td>
-<td>Comprehensive test suite (beyond the Phase 1–3 package tests)</td>
-<td>PLANNED</td>
+<td>Comprehensive test suite (real-binary e2e + full-automation)</td>
+<td><strong>IMPLEMENTED</strong> —
+<code>cmd/docs_chain/e2e_test.go</code> (subprocess across every
+subcommand + exit-code contract), <code>watch_test.go</code> (daemon),
+<code>internal/runner/sqlite_runner_test.go</code>,
+<code>scripts/e2e.sh</code> (20/0 GREEN, captured transcript under
+<code>qa-results/docs_chain/</code>).</td>
 </tr>
 <tr>
 <td>6</td>
@@ -428,12 +449,24 @@ honestly (no fake output) and the message says so.</p></li>
 <h3
 id="what-is-planned-not-yet-functional-do-not-assume-working-behaviour">What
 is PLANNED (NOT yet functional — do not assume working behaviour)</h3>
-<p>The fsnotify <code>watch</code> daemon (Phase 4 —
-<code>docs_chain watch</code>), the comprehensive beyond-package test
-suite (Phase 5), and the constitution-submodule integration (Phases 6–7)
-are NOT implemented in this repo yet. The <code>docs/</code> pages
-describe their DESIGNED contract. <code>docs_chain watch</code> is not
-wired; use <code>sync</code> / <code>verify</code> on demand.</p>
+<p>Only the <strong>distribution / wiring</strong> phases remain, and
+they are OPERATOR-GATED (an agent must not create remotes or add
+submodule pointers — §11.4.66):</p>
+<ul>
+<li><strong>Phase 6</strong> — constitution-submodule integration + repo
+creation: publish <code>vasic-digital/docs_chain</code> and add it as a
+submodule of the constitution so consumers inherit the engine
+by-reference at the constitution-exposed path.</li>
+<li><strong>Phase 7</strong> — register the ATMOSphere contexts + retire
+that project’s remaining ad-hoc doc-sync scripts.</li>
+</ul>
+<p>The engine itself is feature-complete:
+<code>sync</code>/<code>verify</code>/<code>doctor</code>/<code>graph</code>/<code>watch</code>,
+all builtins
+(<code>pandoc-html</code>/<code>weasyprint-pdf</code>/<code>pandoc-docx</code>/<code>members-fingerprint</code>/
+<code>md-to-sqlite</code>/<code>sqlite-to-md</code>/<code>colorize-html</code>),
+and <code>exec:</code> transforms are IMPLEMENTED + tested.
+<code>docs/</code> pages describe Phases 6–7’s DESIGNED contract.</p>
 <h2 id="documentation">Documentation</h2>
 <table>
 <colgroup>

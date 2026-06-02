@@ -242,20 +242,27 @@
 </header>
 <h1 id="docs-chain-configuration-schema-reference">Docs Chain —
 Configuration Schema Reference</h1>
-<p><strong>Revision:</strong> 2 <strong>Last modified:</strong>
-2026-05-29T12:00:00Z <strong>Status:</strong> Design documentation — the
-schema is PLANNED (Phase 4 — config loader + validation). Describes the
-DESIGNED YAML contract. <strong>Authority:</strong> Operator mandate
-2026-05-29 (Docs Chain initiative) <strong>Design provenance:</strong>
-authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming
-project research tree (<code>docs/research/docs_chain/</code>); this
-document is the self-contained specification.</p>
+<p><strong>Revision:</strong> 3 <strong>Last modified:</strong>
+2026-06-02T00:00:00Z <strong>Status:</strong> IMPLEMENTED — the schema
+is parsed + validated by the Phase-4 config loader
+(<code>internal/config</code>); the built <code>docs_chain</code> binary
+loads contexts written to this contract today
+(<code>go test -race ./...</code> passes; <code>scripts/e2e.sh</code>
+GREEN). Describes the live YAML contract. <strong>Authority:</strong>
+Operator mandate 2026-05-29 (Docs Chain initiative) <strong>Design
+provenance:</strong> authoritative Phase-0 DESIGN / RESEARCH / PLAN live
+in the consuming project research tree
+(<code>docs/research/docs_chain/</code>); this document is the
+self-contained specification.</p>
 <hr />
 <h2 id="status">Status</h2>
-<p><strong>PLANNED (Phase 4).</strong> The YAML loader and validator
-land in Phase 4 (<code>internal/config</code>). This document is the
-formal contract a consuming project writes against; it is not a claim
-that the loader parses it today.</p>
+<p><strong>IMPLEMENTED (Phase 4).</strong> The YAML loader and validator
+live in <code>internal/config</code> and the built
+<code>docs_chain</code> binary parses contexts written to this contract
+today (proven by <code>internal/config</code> unit tests + the
+real-binary subprocess e2e in <code>cmd/docs_chain/e2e_test.go</code>).
+This document is the formal contract a consuming project writes
+against.</p>
 <hr />
 <h2 id="file-location-and-discovery">1. File location and discovery</h2>
 <ul>
@@ -652,7 +659,7 @@ values</h3>
 <tr>
 <td><code>colorize-html</code></td>
 <td><code>html → html</code> post-process (§11.4.23)</td>
-<td>internal</td>
+<td>internal (x/net/html — IMPLEMENTED)</td>
 </tr>
 <tr>
 <td><code>gen-summary</code></td>
@@ -661,13 +668,13 @@ values</h3>
 </tr>
 <tr>
 <td><code>md-to-sqlite</code></td>
-<td><code>markdown → sqlite</code></td>
-<td>configured DB binary</td>
+<td><code>markdown → sqlite</code> (tabular pipe-tables)</td>
+<td>internal (pure-Go modernc.org/sqlite — IMPLEMENTED)</td>
 </tr>
 <tr>
 <td><code>sqlite-to-md</code></td>
-<td><code>sqlite → markdown</code></td>
-<td>configured DB binary</td>
+<td><code>sqlite → markdown</code> (tabular projection)</td>
+<td>internal (pure-Go modernc.org/sqlite — IMPLEMENTED)</td>
 </tr>
 <tr>
 <td><code>members-fingerprint</code></td>

@@ -1,0 +1,4 @@
+# docs_chain sync evidence
+# run 2026-06-02T07:16:56Z UTC
+
+self-docs                applied: committed [cfg_docx cfg_html cfg_pdf const_docx const_html const_pdf guide_docx guide_html guide_pdf readme_docx readme_html readme_pdf]
