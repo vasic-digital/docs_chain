@@ -71,8 +71,10 @@ func run(args []string, stdout, stderr *os.File) int {
 		return cmdVerify(rest, stdout, stderr)
 	case "graph":
 		return cmdGraph(rest, stdout, stderr)
+	case "watch":
+		return cmdWatch(rest, stdout, stderr)
 	case "version", "--version", "-v":
-		fmt.Fprintln(stdout, "docs_chain (Phase 4 CLI) — sync | verify | doctor | graph")
+		fmt.Fprintln(stdout, "docs_chain (Phase 4 CLI) — sync | verify | doctor | graph | watch")
 		return exitOK
 	case "help", "-h", "--help":
 		usage(stdout)
@@ -92,6 +94,8 @@ Usage:
   docs_chain sync    [--all | <context>] [--root DIR]   propagate atomically, update state
   docs_chain verify  [--all | <context>] [--root DIR]   read-only drift check (CI gate)
   docs_chain graph   <context>            [--root DIR]   print topo order + edges (debug)
+  docs_chain watch   [--all | <context>] [--root DIR] [--debounce 300ms]
+                                                         sync on source change (fsnotify daemon)
 
 Exit codes: 0 ok · 1 error · 2 conflict · 3 transform-fail · 4 cycle/config-error
 Contexts live in <root>/.docs_chain/contexts/*.yaml ; state in <root>/.docs_chain/state.json
@@ -209,6 +213,13 @@ func cmdSync(args []string, stdout, stderr *os.File) int {
 	if code != exitOK {
 		return code
 	}
+	return runSyncContexts(root, contexts, stdout, stderr)
+}
+
+// runSyncContexts loads state, syncs every context atomically, persists state,
+// and writes per-run §11.4.69 evidence. Shared by `sync` and the `watch` daemon
+// so a watch-triggered sync carries the same evidence + exit-code contract.
+func runSyncContexts(root string, contexts []*config.Context, stdout, stderr *os.File) int {
 	statePath := state.DefaultPath(root)
 	st, err := state.Load(statePath)
 	if err != nil {

@@ -2,7 +2,7 @@
 
 **Revision:** 4
 **Last modified:** 2026-05-31T12:00:00Z
-**Status:** Docs Chain Phases 1–3 plus the Phase-4 config loader + CLI IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` + `internal/config` + `internal/state` + `internal/runner` + `cmd/docs_chain` — `go test -race ./...` passes). The first downstream consumer (Herald) has wired a full 66-doc Markdown→HTML/PDF/DOCX corpus via `exec:` transforms and `verify`s exit 0 across it (see [`docs/USE_CASE_CATALOGUE.md` Appendix Z](docs/USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald)). The Phase-4 fsnotify `watch` daemon and Phases 5–7 remain PLANNED. This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
+**Status:** Docs Chain Phases 1–3 plus the Phase-4 config loader + CLI IMPLEMENTED + tested (`internal/hash` + `internal/graph` + `internal/adapter` + `internal/orchestrator` + `internal/config` + `internal/state` + `internal/runner` + `cmd/docs_chain` — `go test -race ./...` passes). The first downstream consumer (Herald) has wired a full 66-doc Markdown→HTML/PDF/DOCX corpus via `exec:` transforms and `verify`s exit 0 across it (see [`docs/USE_CASE_CATALOGUE.md` Appendix Z](docs/USE_CASE_CATALOGUE.md#appendix-z--worked-consumer-example-herald)). The fsnotify `watch` daemon, the generic bidirectional `md-to-sqlite` / `sqlite-to-md` DB builtins, the `colorize-html` (§11.4.23) builtin, and the comprehensive test suite (Phase 5 — real-binary subprocess e2e + watch full-automation + `scripts/e2e.sh`) are now **IMPLEMENTED + tested** (`go test -race ./...` passes; `scripts/e2e.sh` is GREEN, 20/0). Phase 6 (constitution-submodule distribution) + Phase 7 (ATMOSphere wiring) remain PLANNED — OPERATOR-GATED (remote-repo creation / cross-repo). This README and the docs under `docs/` mark each capability IMPLEMENTED vs PLANNED and do not claim working behaviour that is not yet built (§11.4.6).
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 
 ---
@@ -34,8 +34,9 @@ Kahn topological ordering, early-cutoff, declared-authority bidirectional
 | 1 | Core DAG + content-hash engine | **IMPLEMENTED + tested** (`internal/hash`, `internal/graph`) |
 | 2 | Node adapters + transforms | **IMPLEMENTED + tested** (`internal/adapter`) |
 | 3 | Propagation orchestrator + atomicity (filesystem/SQLite) | **IMPLEMENTED + tested** (`internal/orchestrator`) |
-| 4 | Config-driven multi-context + CLI | **IMPLEMENTED + tested** (`internal/config`, `internal/state`, `internal/runner`, `cmd/docs_chain` — `sync`/`verify`/`doctor`/`graph`). The fsnotify `watch` daemon remains PLANNED. |
-| 5 | Comprehensive test suite (beyond the Phase 1–3 package tests) | PLANNED |
+| 4 | Config-driven multi-context + CLI + `watch` daemon | **IMPLEMENTED + tested** (`internal/config`, `internal/state`, `internal/runner`, `cmd/docs_chain` — `sync`/`verify`/`doctor`/`graph`/`watch`; fsnotify daemon proven by `cmd/docs_chain/watch_test.go` full-automation). |
+| 4b | Generic DB builtins + `colorize-html` | **IMPLEMENTED + tested** — bidirectional `md-to-sqlite`/`sqlite-to-md` (pure-Go modernc, row-level drift, byte-stable round-trip) + `colorize-html` (§11.4.23 cell-color matrix). |
+| 5 | Comprehensive test suite (real-binary e2e + full-automation) | **IMPLEMENTED** — `cmd/docs_chain/e2e_test.go` (subprocess across every subcommand + exit-code contract), `watch_test.go` (daemon), `internal/runner/sqlite_runner_test.go`, `scripts/e2e.sh` (20/0 GREEN, captured transcript under `qa-results/docs_chain/`). |
 | 6 | Constitution-submodule integration + repo creation | PLANNED — OPERATOR-GATED |
 | 7 | ATMOSphere wiring + retire ad-hoc scripts | PLANNED |
 
@@ -104,11 +105,19 @@ Kahn topological ordering, early-cutoff, declared-authority bidirectional
 
 ### What is PLANNED (NOT yet functional — do not assume working behaviour)
 
-The fsnotify `watch` daemon (Phase 4 — `docs_chain watch`), the comprehensive
-beyond-package test suite (Phase 5), and the constitution-submodule
-integration (Phases 6–7) are NOT implemented in this repo yet. The `docs/`
-pages describe their DESIGNED contract. `docs_chain watch` is not wired; use
-`sync` / `verify` on demand.
+Only the **distribution / wiring** phases remain, and they are OPERATOR-GATED
+(an agent must not create remotes or add submodule pointers — §11.4.66):
+
+- **Phase 6** — constitution-submodule integration + repo creation: publish
+  `vasic-digital/docs_chain` and add it as a submodule of the constitution so
+  consumers inherit the engine by-reference at the constitution-exposed path.
+- **Phase 7** — register the ATMOSphere contexts + retire that project's
+  remaining ad-hoc doc-sync scripts.
+
+The engine itself is feature-complete: `sync`/`verify`/`doctor`/`graph`/`watch`,
+all builtins (`pandoc-html`/`weasyprint-pdf`/`pandoc-docx`/`members-fingerprint`/
+`md-to-sqlite`/`sqlite-to-md`/`colorize-html`), and `exec:` transforms are
+IMPLEMENTED + tested. `docs/` pages describe Phases 6–7's DESIGNED contract.
 
 ## Documentation
 

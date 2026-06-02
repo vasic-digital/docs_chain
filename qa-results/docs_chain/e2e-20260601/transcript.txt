@@ -1,0 +1,36 @@
+# docs_chain e2e — 2026-06-02T07:00:04Z
+go: go version go1.26.2 darwin/arm64
+
+## build the real binary
+PASS  build (/tmp/dc_e2e_bin)
+
+## pure-Go md→sqlite→md chain (no external tool — always runs)
+PASS  doctor tables (exit 0)
+PASS  graph tables (exit 0)
+PASS  sync tables (exit 0)
+PASS  db produced (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/data/items.db ok)
+PASS  view produced (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/data/items.view.md ok)
+PASS  verify in-sync (exit 0)
+PASS  verify STALE on edit (exit 1)
+PASS  re-sync (exit 0)
+PASS  row propagated (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/data/items.view.md ok)
+PASS  unknown context err (exit 1)
+PASS  unknown subcommand (exit 1)
+
+## §11.4.23 md→html→colorize chain
+PASS  sync tracker (exit 0)
+PASS  colorized html (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/Issues.colored.html ok)
+PASS  §11.4.23 bug pale-red (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/Issues.colored.html ok)
+PASS  §11.4.23 fixed green (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/Issues.colored.html ok)
+PASS  §11.4.23 blocker red (/var/folders/t3/dmp1fb1d61xbl27trnjtr0_c0000gn/T/tmp.zqm5H9KN8k/Issues.colored.html ok)
+PASS  verify tracker in-sync (exit 0)
+
+## anti-bluff: a builtin needing an absent tool surfaces honest SKIP/rollback (exit 3), never a fake pass
+PASS  tool-absent honest rollback (exit 3, no fake T.html written)
+
+## evidence: every sync wrote a §11.4.69 qa-results artefact
+PASS  qa-results evidence artefacts produced (2 run dir(s))
+
+====================================================
+Result: 20 PASS / 0 FAIL / 0 SKIP
+docs_chain e2e GREEN — all observable behaviour verified against the real binary.

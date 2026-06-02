@@ -140,9 +140,9 @@ captured as the canonical pattern in
 - The Docs Chain engine (Go binary + builtins: `pandoc-html`,
   `weasyprint-pdf`, `colorize-html`, `members-fingerprint`,
   `gen-summary`, `md-to-sqlite` / `sqlite-to-md` adapters).
-- The CLI and exit-code contract: `sync` / `verify` / `graph` / `doctor`
-  are IMPLEMENTED today; `watch` (fsnotify daemon) is PLANNED (Phase 4 —
-  not yet wired).
+- The CLI and exit-code contract: `sync` / `verify` / `graph` / `doctor` /
+  `watch` (fsnotify daemon) are ALL IMPLEMENTED today (the `watch` daemon is
+  proven by the full-automation test `cmd/docs_chain/watch_test.go`).
 - Atomic-commit + rollback + conflict semantics (ARCHITECTURE §5, §8).
 - Content-hash change detection (§11.4.86 not-mtime).
 - The use-case recipe catalogue (this submodule's
@@ -162,7 +162,10 @@ captured as the canonical pattern in
 
 ## 6. Out-of-the-box adoption checklist
 
-**Status: PLANNED — usable once Phase 6 distribution + Phase 4 CLI land.**
+**Status: PARTIALLY USABLE TODAY — the Phase-4 CLI has landed, so steps 2–6
+work now against a by-reference Projects-root sibling checkout (as Herald does);
+only the Phase-6 constitution-submodule distribution (a turnkey `git submodule`
+pointer) remains PLANNED + OPERATOR-GATED.**
 
 A project follows these steps to start using Docs Chain:
 

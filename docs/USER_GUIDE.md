@@ -2,7 +2,7 @@
 
 **Revision:** 3
 **Last modified:** 2026-05-31T12:00:00Z
-**Status:** The Phase 1–3 engine plus the Phase-4 config loader + CLI (`doctor` / `sync` / `verify` / `graph`) are IMPLEMENTED + tested (`go test -race ./...` passes); the built `docs_chain` binary runs these subcommands today, and the first downstream consumer (Herald) has wired a 66-doc corpus that `verify`s exit 0. The fsnotify `watch` daemon (§8) remains PLANNED. See status tags per section.
+**Status:** The Phase 1–3 engine plus the Phase-4 config loader + CLI (`doctor` / `sync` / `verify` / `graph` / **`watch`**) are IMPLEMENTED + tested (`go test -race ./...` passes; `scripts/e2e.sh` GREEN); the built `docs_chain` binary runs every subcommand today, and the first downstream consumer (Herald) has wired a 66-doc corpus that `verify`s exit 0. The fsnotify `watch` daemon (§8) and the generic `md-to-sqlite`/`sqlite-to-md` + `colorize-html` builtins are now IMPLEMENTED. See status tags per section.
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -17,11 +17,11 @@ Per §11.4.6 (no-guessing), every workflow below carries a status tag:
   `PLAN.md`).
 
 The Phase 1–3 engine and the Phase-4 config loader + CLI are built and
-tested. The `docs_chain` binary runs `doctor` / `sync` / `verify` / `graph`
-today (each section below is tagged IMPLEMENTED). The only PLANNED shell
-workflow in this guide is the fsnotify `watch` daemon (§8); its copy-paste
-example shows the DESIGNED interface and is not a claim that `watch` runs
-today.
+tested. The `docs_chain` binary runs `doctor` / `sync` / `verify` / `graph` /
+`watch` today, and every section below is tagged IMPLEMENTED. The only
+remaining PLANNED items are the OPERATOR-GATED distribution phases (the
+constitution-submodule pointer, Phase 6; the ATMOSphere wiring, Phase 7) — not
+any engine behaviour in this guide.
 
 ---
 
@@ -194,18 +194,24 @@ pre-run state.
 
 ## 8. Run the watch daemon
 
-**Status: PLANNED (Phase 4 — fsnotify daemon).**
+**Status: IMPLEMENTED (Phase 4 — fsnotify daemon).** Proven by the
+full-automation test `cmd/docs_chain/watch_test.go` (a real source edit
+triggers a real re-sync through the DAG, no manual step).
 
 For interactive development, the watch daemon runs `sync` automatically
-on a debounced settle after edits:
+on a debounced settle after edits to **source** files (derived outputs are
+not watched, so a sync never re-triggers itself):
 
 ```bash
-docs_chain watch                 # all contexts
-docs_chain watch --context guide # one context
+docs_chain watch --all                    # all contexts
+docs_chain watch guide                     # one context
+docs_chain watch --all --debounce 500ms    # tune the coalescing window
 ```
 
-Stop it with Ctrl-C. The daemon uses fsnotify (via
-`vasic-digital/Watcher`) — no external daemon process is required.
+Stop it with Ctrl-C (or SIGTERM) — the daemon exits 0. It uses
+`github.com/fsnotify/fsnotify`; no external daemon process is required. Every
+debounced sync writes the same `qa-results/docs_chain/<run-id>/` evidence as a
+manual `sync`.
 
 ---
 

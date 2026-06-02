@@ -12,7 +12,6 @@
 package runner
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"os/exec"
@@ -125,38 +124,16 @@ func newAdapter(ns config.NodeSpec, projectRoot string) (adapter.Adapter, error)
 	case graph.KindDOCX:
 		return adapter.NewDOCXAdapter(path), nil
 	case graph.KindSQLite:
-		// A deterministic dump query is required by the SQLite adapter. Docs
-		// Chain hashes a stable schema+rows dump (sqlite_master) so a sync
-		// md->db node's content hash is a pure function of logical DB state.
-		// Writes go through an exec transform (md-to-sqlite); this adapter is
-		// read-for-hashing here, so Apply is left nil (the exec transform
-		// mutates the DB itself and Docs Chain re-reads the dump to confirm).
-		return adapter.NewSQLiteAdapter(adapter.SQLiteConfig{
-			DSN:       path,
-			DumpQuery: defaultSQLiteDumpQuery,
-			Apply:     sqliteNoopApply,
-		})
+		// Content = the FULL canonical schema+ROWS dump (canonicalDumpAllTables)
+		// so ROW-level changes drive drift detection, not just schema changes.
+		// Writes are a no-op: the bound transform (the md-to-sqlite builtin, or
+		// an exec md-to-db) mutates the .db file directly and Docs Chain re-reads
+		// the dump to confirm. (The schema-only single-query path was inadequate
+		// for row-level DB-as-SSoT sync; see internal/adapter/sqlite_table.go.)
+		return adapter.NewSQLiteRowDumpAdapter(path), nil
 	default:
 		return nil, fmt.Errorf("runner: node %q has unsupported kind %q", ns.ID, ns.Kind)
 	}
-}
-
-// defaultSQLiteDumpQuery is a deterministic, schema-stable canonical dump:
-// every row of every user table is NOT enumerated generically here (that
-// requires per-schema reflection); instead we hash the full schema + the
-// sqlite_master rows, which changes whenever tables/indexes change. For a
-// row-level content hash a context supplies a sqlite node whose backing
-// generator (the exec md-to-sqlite transform) writes a deterministic export
-// that Docs Chain re-reads. This conservative default is honest: it detects
-// schema drift and is stable for an unchanged DB.
-const defaultSQLiteDumpQuery = `SELECT type, name, COALESCE(sql,'') FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name`
-
-// sqliteNoopApply is a placeholder Apply that refuses direct content writes:
-// sqlite mutation flows through the configured exec transform, not the
-// adapter's Write. If the engine ever tries to Write a sqlite node directly
-// it surfaces an explicit error rather than silently doing nothing.
-func sqliteNoopApply(_ *sql.Tx, _ []byte) error {
-	return fmt.Errorf("runner: sqlite node writes flow through the configured exec transform, not adapter.Write")
 }
 
 // bindTransforms turns each config edge into the graph.Transform the engine
@@ -240,6 +217,23 @@ func bindOneAt(ts config.TransformSpec, outPath string, target config.NodeSpec, 
 			// or from the target node itself when it is the fingerprint.
 			fp := target
 			return membersFingerprintTransform(fp, projectRoot), nil
+		case config.BuiltinMDToSQLite:
+			// Parse the markdown source's pipe tables into the target SQLite DB
+			// (outPath is the live .db on sync, a temp path on verify).
+			return adapter.MarkdownToSQLite(outPath), nil
+		case config.BuiltinSQLiteToMD:
+			// Render the SOURCE sqlite node's tables back to markdown. The source
+			// is never rebound by Verify (only the output target is), so resolve
+			// the live source DB path from the edge's source node.
+			if len(srcIDs) == 0 {
+				return nil, fmt.Errorf("runner: builtin sqlite-to-md requires a source sqlite node (context %q, target %q)", c.Name, target.ID)
+			}
+			srcDB := resolve(projectRoot, c.Nodes[srcIDs[0]].Path)
+			return adapter.SQLiteToMarkdown(srcDB), nil
+		case config.BuiltinColorizeHTML:
+			// §11.4.23 html→html post-process: background-color tracker-doc
+			// Type/Status cells. Deterministic; non-tracker HTML passes through.
+			return adapter.ColorizeHTML(), nil
 		default:
 			return nil, fmt.Errorf("runner: builtin %q is recognized by the schema but not yet wired to a runnable transform (context %q, target %q)", ts.Builtin, c.Name, target.ID)
 		}

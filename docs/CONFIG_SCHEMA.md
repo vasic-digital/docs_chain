@@ -1,8 +1,8 @@
 # Docs Chain — Configuration Schema Reference
 
-**Revision:** 2
-**Last modified:** 2026-05-29T12:00:00Z
-**Status:** Design documentation — the schema is PLANNED (Phase 4 — config loader + validation). Describes the DESIGNED YAML contract.
+**Revision:** 3
+**Last modified:** 2026-06-02T00:00:00Z
+**Status:** IMPLEMENTED — the schema is parsed + validated by the Phase-4 config loader (`internal/config`); the built `docs_chain` binary loads contexts written to this contract today (`go test -race ./...` passes; `scripts/e2e.sh` GREEN). Describes the live YAML contract.
 **Authority:** Operator mandate 2026-05-29 (Docs Chain initiative)
 **Design provenance:** authoritative Phase-0 DESIGN / RESEARCH / PLAN live in the consuming project research tree (`docs/research/docs_chain/`); this document is the self-contained specification.
 
@@ -10,9 +10,11 @@
 
 ## Status
 
-**PLANNED (Phase 4).** The YAML loader and validator land in Phase 4
-(`internal/config`). This document is the formal contract a consuming
-project writes against; it is not a claim that the loader parses it today.
+**IMPLEMENTED (Phase 4).** The YAML loader and validator live in
+`internal/config` and the built `docs_chain` binary parses contexts written
+to this contract today (proven by `internal/config` unit tests + the
+real-binary subprocess e2e in `cmd/docs_chain/e2e_test.go`). This document is
+the formal contract a consuming project writes against.
 
 ---
 
@@ -138,10 +140,10 @@ Exactly one of `builtin` / `exec` MUST be present.
 |---------|------|------|
 | `pandoc-html` | `markdown → html` | pandoc |
 | `weasyprint-pdf` | `html → pdf` or `markdown → pdf` | weasyprint |
-| `colorize-html` | `html → html` post-process (§11.4.23) | internal |
+| `colorize-html` | `html → html` post-process (§11.4.23) | internal (x/net/html — IMPLEMENTED) |
 | `gen-summary` | `markdown → summary` (pluggable generator) | configured generator |
-| `md-to-sqlite` | `markdown → sqlite` | configured DB binary |
-| `sqlite-to-md` | `sqlite → markdown` | configured DB binary |
+| `md-to-sqlite` | `markdown → sqlite` (tabular pipe-tables) | internal (pure-Go modernc.org/sqlite — IMPLEMENTED) |
+| `sqlite-to-md` | `sqlite → markdown` (tabular projection) | internal (pure-Go modernc.org/sqlite — IMPLEMENTED) |
 | `members-fingerprint` | members glob → `fingerprint` (§11.4.86) | internal sha256-of-sorted-members |
 
 ### 5.2 `exec:` transform contract
