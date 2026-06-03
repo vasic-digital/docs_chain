@@ -1,0 +1,27 @@
+# helix-deps.yaml — docs_chain Submodule-Dependency Manifest
+# Per HelixConstitution §11.4.31 (Submodule-Dependency-Manifest Mandate / CONST-054).
+#
+# docs_chain is a leaf Go submodule (digital.vasic.docs_chain) providing a
+# bidirectional document-and-database dependency-propagation engine. It has
+# ZERO own-org submodule dependencies — pure Go module + standard 3rd-party
+# deps (fsnotify, yaml.v3, modernc.org/sqlite) declared in go.mod.
+#
+# Schema reference: constitution/Constitution.md §11.4.31.
+# Last updated: 2026-06-02 (Lava incorporation cascade).
+
+schema_version: 1
+
+# docs_chain has no own-org dependencies. The empty deps array is the
+# honest manifest for a leaf submodule. Future agents reading this
+# file have positive evidence docs_chain is incorporable as a peer with
+# zero transitive own-org-dep recursion.
+deps: []
+
+transitive_handling:
+  recursive: true
+  conflict_resolution: operator-required
+
+# docs_chain is a Go module — language_specific_subtree is false because
+# the entire submodule is the Go subtree (no inner non-Go subtrees
+# requiring §11.4.29 snake_case exemption).
+language_specific_subtree: false
