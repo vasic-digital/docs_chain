@@ -67,6 +67,8 @@ func run(args []string, stdout, stderr *os.File) int {
 		return cmdDoctor(rest, stdout, stderr)
 	case "sync":
 		return cmdSync(rest, stdout, stderr)
+	case "rebaseline":
+		return cmdReBaseline(rest, stdout, stderr)
 	case "verify":
 		return cmdVerify(rest, stdout, stderr)
 	case "graph":
@@ -92,6 +94,10 @@ func usage(w *os.File) {
 Usage:
   docs_chain doctor  [--all | <context>] [--root DIR]   validate contexts (no writes)
   docs_chain sync    [--all | <context>] [--root DIR]   propagate atomically, update state
+  docs_chain rebaseline [--all | <context>] [--root DIR] re-baseline sync edges from their
+                                                         AUTHORITY side only (non-authority side
+                                                         regenerated + state recorded; authority
+                                                         side READ-ONLY, never written)
   docs_chain verify  [--all | <context>] [--root DIR]   read-only drift check (CI gate)
   docs_chain graph   <context>            [--root DIR]   print topo order + edges (debug)
   docs_chain watch   [--all | <context>] [--root DIR] [--debounce 300ms]
@@ -263,6 +269,86 @@ func runSyncContexts(root string, contexts []*config.Context, stdout, stderr *os
 		fmt.Fprintf(stdout, "evidence: %s\n", relTo(root, evidenceDir))
 	}
 	return worst
+}
+
+// cmdReBaseline re-baselines every selected context's sync edges from their
+// AUTHORITY side only: the non-authority side is regenerated from the authority
+// side (authority->non-authority transform, e.g. db-to-md), the derive-from
+// exports are refreshed, and state.json is updated — WITHOUT ever writing the
+// authority side. A context with no sync edges is skipped with a note (use sync).
+func cmdReBaseline(args []string, stdout, stderr *os.File) int {
+	root, contexts, code := loadSelected(args, stderr)
+	if code != exitOK {
+		return code
+	}
+	statePath := state.DefaultPath(root)
+	st, err := state.Load(statePath)
+	if err != nil {
+		fmt.Fprintf(stderr, "docs_chain: %v\n", err)
+		return exitError
+	}
+
+	runID := time.Now().UTC().Format("20060102T150405Z")
+	evidenceDir := filepath.Join(root, "qa-results", "docs_chain", runID)
+	worst := exitOK
+	var evidence []string
+
+	for _, c := range contexts {
+		prep, perr := runner.Prepare(c, root, st)
+		if perr != nil {
+			fmt.Fprintf(stderr, "docs_chain: prepare %q: %v\n", c.Name, perr)
+			worst = maxExit(worst, exitError)
+			continue
+		}
+		res, rerr := prep.ReBaseline(st)
+		if rerr != nil {
+			// No sync edges, or a config inconsistency we will not guess past.
+			line := fmt.Sprintf("%-24s SKIP (re-baseline N/A): %v", c.Name, rerr)
+			fmt.Fprintln(stdout, line)
+			evidence = append(evidence, line)
+			continue
+		}
+		line := formatReBaselineResult(c.Name, res)
+		fmt.Fprintln(stdout, line)
+		evidence = append(evidence, line)
+		switch res.Status {
+		case orchestrator.StatusCommitted, orchestrator.StatusInSync:
+			// ok
+		case orchestrator.StatusConflict:
+			worst = maxExit(worst, exitConflict)
+		case orchestrator.StatusCycle:
+			worst = maxExit(worst, exitConfig)
+		default:
+			worst = maxExit(worst, exitTransform)
+		}
+	}
+
+	if serr := st.Save(statePath); serr != nil {
+		fmt.Fprintf(stderr, "docs_chain: WARN could not save state: %v\n", serr)
+	}
+	if werr := writeEvidence(evidenceDir, "rebaseline", evidence); werr != nil {
+		fmt.Fprintf(stderr, "docs_chain: WARN evidence: %v\n", werr)
+	} else {
+		fmt.Fprintf(stdout, "evidence: %s\n", relTo(root, evidenceDir))
+	}
+	return worst
+}
+
+// formatReBaselineResult renders a one-line human report for a re-baseline run,
+// always naming the write-guarded (read-only) authority nodes for auditability.
+func formatReBaselineResult(name string, res *runner.ReBaselineResult) string {
+	switch res.Status {
+	case orchestrator.StatusInSync:
+		return fmt.Sprintf("%-24s re-baselined: in-sync (read-only authority %v; regenerated %v)", name, res.ProtectedNodes, res.Regenerated)
+	case orchestrator.StatusCommitted:
+		return fmt.Sprintf("%-24s re-baselined: committed %v (read-only authority %v)", name, res.Committed, res.ProtectedNodes)
+	case orchestrator.StatusRolledBack:
+		return fmt.Sprintf("%-24s ROLLED-BACK: %v (no writes; authority %v stayed read-only)", name, res.Err, res.ProtectedNodes)
+	case orchestrator.StatusConflict:
+		return fmt.Sprintf("%-24s CONFLICT: %v (no writes)", name, res.Err)
+	default:
+		return fmt.Sprintf("%-24s %s: %v", name, res.Status, res.Err)
+	}
 }
 
 // formatSyncResult renders a one-line human report for a run result.
