@@ -278,3 +278,45 @@ When the §11.4.125 code-review returns ANY finding — BLOCKING, nit, or warnin
 > `--no-registry`, `--invent-expansion-OK`, `--single-layer-only` flag.
 
 **§11.4.141 — Token-efficiency mandate (research-derived + operator mandate, 2026-06-09).** Every project worked on by AI coding agents MUST cut token spend (input AND output) toward **30–40% of current (a 60–70% reduction)** WITHOUT degrading quality/performance/safety or breaking any existing mechanism, via a composable, safety-ranked measure set: (1) **prompt-cache the static governance prefix** — the always-loaded governance forms a byte-stable cache-breakpointed prefix with no volatile bytes ahead of it; cache reads cost ~0.1× base input (the dominant cost driver — measured ~170K tokens of governance re-sent every turn, externally corroborated by Claude Code issue #24147); caching is transparent so it removes no rule, weakens no gate, changes no verdict — only billing (PRIMARY, biggest + safest lever); (2) **subagent model-tiering + output-to-file** — mechanical non-judgment work (search/grep/status/doc-export/read-only probes) to a Haiku-class model, the strong model RESERVED for all reasoning/verdicts/fix-design (§11.4.102)/code-review (§11.4.125)/demotion (§11.4.7), large output persisted to a file not an inline 350–520K-token transcript; the cheap model never emits a PASS so §11.4.50 + anti-bluff are untouched; (3) **thin always-loaded INDEX + on-demand detail** — concise index (one line per fix/anchor, EACH carrying the literal `11.4.N` token so propagation gates pass) with the canonical full text kept gate-scanned in `constitution/Constitution.md` and reachable in one hop — a de-duplication realising §11.4.35, never a deletion; (4) **CodeGraph/retrieval-first over full-file loading** (§11.4.78/§11.4.79); (5) **output-token reduction** — terse status + `effort:"low"` on the mechanical allowlist only; (6) **tool-call batching + no re-reads**; (7) **compaction/context-editing for long sessions**. **Mandatory measured proof:** a token-accounting harness measures tokens-per-development-cycle BEFORE vs AFTER on a frozen deterministic workload from the authoritative `usage` object (input/cache_read/cache_creation/output split; NEVER `tiktoken`, NEVER the client-side cost estimate), reproduced N times (§11.4.50), pass = AFTER ≤ 40% of BEFORE OR the measured best-safe reduction with a cited cold-cache reason; the AFTER run MUST show ZERO regression on the pre-build sweep + meta-test mutation sweep + propagation gates + a strong-model reasoning probe + a cache-warm proof (`cache_read_input_tokens > 0`) — cost reduction with quality regression is a §11.4 FAIL. The headline number is the *measured* reduction, never the design estimate (§11.4.6/§11.4.123). No measure may break/degrade any existing mechanism, and the rule is structured so none can. Composes §11.4.5/.6/.20/.40/.50/.58/.69/.70/.78/.79/.80/.103/.106/.123/.125/.128/§12.6/§1.1. Classification: universal (§11.4.17). Propagation gate `CM-COVENANT-114-141-PROPAGATION` (literal `11.4.141`) + recommended gate `CM-TOKEN-EFFICIENCY` + paired §1.1 mutation (inject a pre-breakpoint volatile token → cache collapses → measured reduction falls below bar → gate FAILs). **Canonical authority:** constitution submodule [`Constitution.md`](constitution/Constitution.md) §11.4.141. Non-compliance is a release blocker. No escape hatch — no `--skip-token-efficiency`, `--no-cache-governance`, `--assert-reduction-without-measuring`, `--tier-down-reasoning`, `--inline-all-governance`, `--tiktoken-estimate-OK` flag.
+
+## §11.4.104 — Participant identity, attribution & notification-tagging (User mandate, 2026-05-31)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.104 for the full mandate. Every consumer that ships a messenger/notification surface MUST model participants as logical subscribers with per-channel aliases, carry `created_by` + `assigned_to` on workable items, apply the tagging matrix (tag assigned-to/created-by humans who are not the Operator and not the system agent `Claude`), and anti-bluff the full implementation per §11.4. Propagation gate `CM-COVENANT-114-104-PROPAGATION` (literal `11.4.104`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.104.
+
+## §11.4.106 — Docs Chain — mechanical documentation/DB sync engine (Operator mandate, 2026-05-31)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.106 for the full mandate. Every consumer MUST use the `vasic-digital/docs_chain` engine (inherited by reference, never copied) as the canonical mechanical enforcer of all documentation-sync mandates; register chains via per-context YAML; never accept a faked transform. Ad-hoc sync scripts are superseded. Propagation gate `CM-COVENANT-114-106-PROPAGATION` (literal `11.4.106`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.106.
+
+## §11.4.109 — Mandatory Anti-Forgetting Enforcement: PreToolUse Guard Hook + Subagent Constitutional Preamble + Orchestrator Pre-Action Checklist (Operator mandate)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.109 for the full mandate. Every consumer MUST wire `constitution/scripts/hooks/guard-forbidden-commands.sh` as a `PreToolUse` hook, maintain `docs/AGENT_GUARDRAILS.md` with the subagent constitutional preamble and orchestrator pre-action checklist, and provide a hermetic hook test suite. The hook is inherited by reference, never copied. Propagation gate `CM-COVENANT-114-109-PROPAGATION` (literal `11.4.109`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.109.
+
+## §11.4.111 — Resolve-by-stable-name-not-by-enumeration-index mandate (research-derived, 2026-06-03)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.111 for the full mandate. Any binding to a hardware device / resource handle / enumerated entity MUST resolve by a stable identifier (name / UUID / serial / label) and MUST NOT bind by enumeration index / ordinal / slot unless the platform documents that ordinal as deterministically pinned and the pin is captured + asserted. Propagation gate `CM-COVENANT-114-111-PROPAGATION` (literal `11.4.111`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.111.
+
+## §11.4.116 — Real-time conductor↔autonomous-test-framework sync channel mandate (1.1.8-dev remediation, 2026-06-03)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.116 for the full mandate. Any autonomous long-running test/QA/validation framework MUST expose a structured append-only event stream and an atomically-rewritten status snapshot. Every verdict event MUST carry the evidence path that backs it. A PASS event with no evidence path is a channel-layer PASS-bluff. Propagation gate `CM-COVENANT-114-116-PROPAGATION` (literal `11.4.116`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.116.
+
+## §11.4.120 — Fix-breaks-its-own-gate reconciliation mandate (1.1.8-dev remediation, 2026-06-03)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.120 for the full mandate. When a correct fix causes a pre-existing gate/test to FAIL because it asserted old behaviour, the gate MUST be reconciled (rewritten to assert the new mechanism + paired §1.1 mutation updated) — never fake-passed, weakened to a tautology, or deleted; and the correct fix MUST NOT be reverted to satisfy the stale gate. Propagation gate `CM-COVENANT-114-120-PROPAGATION` (literal `11.4.120`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.120.
+
+## §11.4.121 — No-commit-while-build-writes-tracked-artifacts mandate (1.1.8-dev remediation, 2026-06-03)
+
+Cascade reference — see constitution submodule `Constitution.md` §11.4.121 for the full mandate. A commit MUST NOT run while a build/packaging/generation step is actively writing artifacts into tracked (version-controlled) directories. The commit MUST be deferred until the writing step completes so the tree is quiescent and committed artifacts are the fresh, whole outputs. Propagation gate `CM-COVENANT-114-121-PROPAGATION` (literal `11.4.121`). Non-compliance is a release blocker.
+
+**Canonical authority:** constitution submodule `Constitution.md` §11.4.121.
