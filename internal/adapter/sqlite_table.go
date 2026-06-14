@@ -36,12 +36,23 @@ func (a *SQLiteRowDumpAdapter) Kind() graph.NodeKind { return graph.KindSQLite }
 // Hasher returns the byte-content hasher over the canonical dump.
 func (a *SQLiteRowDumpAdapter) Hasher() hash.Hasher { return a.hasher }
 
-// Read returns the canonical schema+rows dump. A missing / empty DB yields
-// empty content (the natural "dirty vs empty" state for a fresh derived node).
+// Read returns the canonical schema+rows dump. A genuinely MISSING DB file
+// yields empty content (the natural "dirty vs empty" state for a fresh derived
+// node). A file that EXISTS but cannot be read as a valid database (corruption,
+// torn write, lock, permission) surfaces the error rather than masquerading as
+// an empty DB — conflating "corrupt" with "fresh/empty" is a §11.4.6 /
+// §11.4.93 silent-corruption bluff (a sync would DROP+recreate the broken SSoT,
+// a verify would emit a false verdict). See TestSQLiteRead_CorruptDBSurfacesError.
 func (a *SQLiteRowDumpAdapter) Read() ([]byte, error) {
+	if _, statErr := os.Stat(a.path); statErr != nil {
+		if os.IsNotExist(statErr) {
+			return nil, nil // genuinely missing -> empty (cold-start fresh node)
+		}
+		return nil, fmt.Errorf("sqlite read: stat %q: %w", a.path, statErr)
+	}
 	b, err := canonicalDumpAllTables(a.path)
 	if err != nil {
-		return nil, nil
+		return nil, fmt.Errorf("sqlite read: %q exists but is not a readable database: %w", a.path, err)
 	}
 	return b, nil
 }
@@ -403,9 +414,15 @@ func renderRow(cells []string) string {
 
 // userTableNames returns non-internal table names sorted ascending.
 func userTableNames(db *sql.DB) ([]string, error) {
+	// A genuinely fresh/empty SQLite DB returns ZERO ROWS here (no error). The
+	// ONLY way this query errors is a real problem — corruption, lock,
+	// permission, wrong-format file. Propagate it instead of masking corruption
+	// as "no tables" (§11.4.6 no-guessing, §11.4.93 DB-as-SSoT integrity);
+	// previously this returned (nil, nil) and silently treated a corrupt DB as
+	// empty. See TestSQLiteRead_CorruptDBSurfacesError.
 	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
 	if err != nil {
-		return nil, nil // empty / fresh DB
+		return nil, fmt.Errorf("sqlite: list tables: %w", err)
 	}
 	defer rows.Close()
 	var names []string
