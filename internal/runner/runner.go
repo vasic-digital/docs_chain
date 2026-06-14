@@ -413,6 +413,16 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 	}
 	defer os.RemoveAll(tmpOut)
 
+	// produced overlays the freshly-recomputed output of each derived node so a
+	// downstream node reads its source from what a real sync WOULD generate, not
+	// from the (possibly stale) on-disk content. Without this, a multi-level
+	// chain (src -> mid -> leaf) masks downstream staleness: leaf computed from a
+	// stale on-disk mid can match its stale on-disk self and be reported in-sync,
+	// while a real sync would regenerate mid then leaf and change leaf. This
+	// mirrors stagingStore.Get's forward-feed in the sync path so verify's
+	// "stale" matches what sync produces.
+	produced := make(map[string][]byte, len(order))
+
 	for _, id := range order {
 		srcs, isDerived := sources[id]
 		if !isDerived {
@@ -440,13 +450,21 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 		}
 		ins := make(map[string][]byte, len(srcs))
 		for _, s := range srcs {
+			// Prefer the freshly-recomputed output of an upstream derived node
+			// (what a real sync would feed forward) over its on-disk content.
+			if up, ok := produced[s]; ok {
+				cp := make([]byte, len(up))
+				copy(cp, up)
+				ins[s] = cp
+				continue
+			}
 			cur, gerr := p.Store.Get(s)
 			if gerr != nil {
 				return nil, gerr
 			}
 			ins[s] = cur
 		}
-		produced, terr := tf(ins)
+		out, terr := tf(ins)
 		if terr != nil {
 			if adapter.IsToolAbsent(terr) {
 				vr.ToolAbsent = true
@@ -455,6 +473,7 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 			}
 			return nil, terr
 		}
+		produced[id] = out
 		onDisk, gerr := p.Store.Get(id)
 		if gerr != nil {
 			return nil, gerr
@@ -469,7 +488,7 @@ func (p *Prepared) Verify() (*VerifyResult, error) {
 		if herr != nil {
 			return nil, herr
 		}
-		if nh.Hash(produced) != nh.Hash(onDisk) {
+		if nh.Hash(out) != nh.Hash(onDisk) {
 			vr.Stale = append(vr.Stale, id)
 		}
 	}
