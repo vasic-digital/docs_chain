@@ -309,7 +309,13 @@ func canonicalDumpAllTables(path string) ([]byte, error) {
 			return nil, err
 		}
 		// schema header line: TABLE<TAB>name<TAB>col1<TAB>col2...
-		b.WriteString("TABLE\t" + name + "\t" + strings.Join(cols, "\t") + "\n")
+		// Escape so a TAB/NEWLINE inside a table or column name cannot forge a
+		// field/row boundary (the same collision class as row cells).
+		escCols := make([]string, len(cols))
+		for i, c := range cols {
+			escCols[i] = escapeDumpField(c)
+		}
+		b.WriteString("TABLE\t" + escapeDumpField(name) + "\t" + strings.Join(escCols, "\t") + "\n")
 		rows, err := db.Query(fmt.Sprintf("SELECT %s FROM %s ORDER BY rowid", quoteCols(cols), quoteIdent(name)))
 		if err != nil {
 			return nil, fmt.Errorf("sqlite dump: select %q: %w", name, err)
@@ -327,9 +333,9 @@ func canonicalDumpAllTables(path string) ([]byte, error) {
 			fields := make([]string, len(cols))
 			for i, rb := range raw {
 				if rb == nil {
-					fields[i] = "\x00NULL\x00"
+					fields[i] = nullSentinel
 				} else {
-					fields[i] = string(rb)
+					fields[i] = escapeDumpField(string(rb))
 				}
 			}
 			b.WriteString("ROW\t" + strings.Join(fields, "\t") + "\n")
@@ -455,6 +461,31 @@ func tableColumns(db *sql.DB, table string) ([]string, error) {
 		cols = append(cols, name)
 	}
 	return cols, rows.Err()
+}
+
+// nullSentinel marks a SQL NULL in the canonical dump. It contains a literal
+// backslash so it can never be produced by escapeDumpField (which escapes every
+// backslash to `\\`); a real cell value of the same text therefore round-trips
+// to a DIFFERENT escaped form and cannot collide with a genuine NULL.
+const nullSentinel = `\NULL`
+
+// escapeDumpField makes a cell/identifier value injective under the TAB/NEWLINE
+// field+row separators used by canonicalDumpAllTables. Without it, a value
+// containing a TAB (or NEWLINE) forges a field/row boundary, so two genuinely
+// different logical table states serialize to identical dump bytes — a content-
+// hash collision that hides a real change (a §11.4.6 / §11.4.86 change-detection
+// bluff). The dump is only ever HASHED (never parsed back), so this need only be
+// injective, not reversible: backslash is escaped first so the other escapes are
+// unambiguous, and NUL is escaped so the NULL sentinel stays unforgeable.
+func escapeDumpField(s string) string {
+	r := strings.NewReplacer(
+		`\`, `\\`,
+		"\t", `\t`,
+		"\n", `\n`,
+		"\r", `\r`,
+		"\x00", `\0`,
+	)
+	return r.Replace(s)
 }
 
 func quoteIdent(s string) string { return `"` + strings.ReplaceAll(s, `"`, `""`) + `"` }
