@@ -56,7 +56,7 @@ func TestMarkdownAdapter_RoundTrip(t *testing.T) {
 
 func TestPandocMarkdownToHTML(t *testing.T) {
 	if _, err := exec.LookPath("pandoc"); err != nil {
-		t.Skip("SKIP-with-reason: pandoc not installed — derived html transform unverifiable (§11.4.6, never faked)")
+		t.Skip("SKIP-OK: pandoc not installed — derived html transform unverifiable (§11.4.6, never faked)")
 	}
 	dir := t.TempDir()
 	out := filepath.Join(dir, "Doc.html")
@@ -85,7 +85,7 @@ func TestPandocMarkdownToHTML(t *testing.T) {
 
 func TestPandocMarkdownToDOCX(t *testing.T) {
 	if _, err := exec.LookPath("pandoc"); err != nil {
-		t.Skip("SKIP-with-reason: pandoc not installed — derived docx transform unverifiable (§11.4.6, never faked)")
+		t.Skip("SKIP-OK: pandoc not installed — derived docx transform unverifiable (§11.4.6, never faked)")
 	}
 	dir := t.TempDir()
 	out := filepath.Join(dir, "Doc.docx")
@@ -102,7 +102,7 @@ func TestPandocMarkdownToDOCX(t *testing.T) {
 
 func TestWeasyprintHTMLToPDF(t *testing.T) {
 	if _, err := exec.LookPath("weasyprint"); err != nil {
-		t.Skip("SKIP-with-reason: weasyprint not installed — derived pdf transform unverifiable (§11.4.6, never faked)")
+		t.Skip("SKIP-OK: weasyprint not installed — derived pdf transform unverifiable (§11.4.6, never faked)")
 	}
 	dir := t.TempDir()
 	out := filepath.Join(dir, "Doc.pdf")

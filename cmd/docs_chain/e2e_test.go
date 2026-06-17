@@ -160,7 +160,7 @@ transforms:
 // the §11.4.106(E) anti-bluff ToolAbsentError → SKIP, never a fake pass).
 func TestE2E_RealBinary_PandocColorize(t *testing.T) {
 	if _, err := exec.LookPath("pandoc"); err != nil {
-		t.Skip("pandoc absent — honest SKIP (the md→html builtin needs pandoc); not a fake pass")
+		t.Skip("SKIP-OK: pandoc absent — honest SKIP (the md→html builtin needs pandoc); not a fake pass")
 	}
 	bin := buildBinary(t)
 	root := t.TempDir()
