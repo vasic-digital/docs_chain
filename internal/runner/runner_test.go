@@ -39,7 +39,7 @@ func haveTool(name string) bool {
 // no input change is early-cut-off (in-sync, no rewrite).
 func TestSync_MarkdownToHTML_RealPandoc(t *testing.T) {
 	if !haveTool("pandoc") {
-		t.Skip("pandoc absent — honest SKIP (the md->html builtin needs pandoc); not a fake pass")
+		t.Skip("SKIP-OK: pandoc absent — honest SKIP (the md->html builtin needs pandoc); not a fake pass")
 	}
 	root := t.TempDir()
 	// Real markdown source on disk.
@@ -117,7 +117,7 @@ transforms:
 // file is out of date and PASSES (in-sync) once it is regenerated.
 func TestVerify_StaleThenInSync(t *testing.T) {
 	if !haveTool("pandoc") {
-		t.Skip("pandoc absent — honest SKIP; verify of an html derive needs pandoc")
+		t.Skip("SKIP-OK: pandoc absent — honest SKIP; verify of an html derive needs pandoc")
 	}
 	root := t.TempDir()
 	mdPath := filepath.Join(root, "a.md")
@@ -323,7 +323,7 @@ transforms:
 	emptyDir := t.TempDir()
 	t.Setenv("PATH", emptyDir)
 	if haveTool("pandoc") {
-		t.Skip("pandoc still resolvable after PATH override (statically-known abs path?) — cannot force absence here")
+		t.Skip("SKIP-OK: pandoc still resolvable after PATH override (statically-known abs path?) — cannot force absence here")
 	}
 
 	st := state.New()
@@ -385,7 +385,7 @@ transforms:
 func TestVerify_BinaryNode_InSyncAfterSync(t *testing.T) {
 	t.Run("real_pandoc_docx", func(t *testing.T) {
 		if !haveTool("pandoc") {
-			t.Skip("pandoc absent — honest SKIP; the docx derivation needs pandoc")
+			t.Skip("SKIP-OK: pandoc absent — honest SKIP; the docx derivation needs pandoc")
 		}
 		root := t.TempDir()
 		mdPath := filepath.Join(root, "b.md")

@@ -276,7 +276,7 @@ func TestRun_PandocHTMLChain(t *testing.T) {
 		if _, st := os.Stat(htmlP); !errors.Is(st, os.ErrNotExist) {
 			t.Fatal("pandoc absent: html must not exist")
 		}
-		t.Skip("SKIP-with-reason: pandoc not installed — committed-path unverifiable (never faked)")
+		t.Skip("SKIP-OK: pandoc not installed — committed-path unverifiable (never faked)")
 	}
 
 	// pandoc present: committed, real HTML on disk with rendered heading.

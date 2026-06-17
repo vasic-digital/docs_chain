@@ -122,7 +122,7 @@ transforms:
 // report stale (exit 1), and a re-sync restores in-sync.
 func TestCLI_SyncVerifyCycle(t *testing.T) {
 	if !havePandoc() {
-		t.Skip("pandoc absent — honest SKIP; the html builtin needs pandoc")
+		t.Skip("SKIP-OK: pandoc absent — honest SKIP; the html builtin needs pandoc")
 	}
 	bin := buildCLI(t)
 	root := t.TempDir()
@@ -188,7 +188,7 @@ func TestCLI_SyncVerifyCycle(t *testing.T) {
 // (no rewrite) — the content-hash early-cutoff working through the CLI.
 func TestCLI_EarlyCutoff(t *testing.T) {
 	if !havePandoc() {
-		t.Skip("pandoc absent — honest SKIP")
+		t.Skip("SKIP-OK: pandoc absent — honest SKIP")
 	}
 	bin := buildCLI(t)
 	root := t.TempDir()
