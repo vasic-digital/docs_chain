@@ -17,9 +17,7 @@ parent project root to resolve the constitution from any nested location.
 
 All rules in `constitution/CLAUDE.md` (and the `constitution/Constitution.md`
 it references) apply unconditionally. This file's rules below extend them —
-they MUST NOT weaken any inherited rule. See parent project's root `CLAUDE.md`
-§6.AD for the Lava-specific incorporation context (29th §6.L cycle, 2026-05-14)
-and §6.AD-debt for the implementation-gap inventory. Use
+they MUST NOT weaken any inherited rule. Use
 `constitution/find_constitution.sh` from the parent project root to resolve the
 absolute path of the constitution submodule from any nested location.
 
