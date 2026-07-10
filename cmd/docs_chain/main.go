@@ -401,7 +401,17 @@ func cmdVerify(args []string, stdout, stderr *os.File) int {
 		return code
 	}
 	statePath := state.DefaultPath(root)
-	st, _ := state.Load(statePath) // missing state is fine for verify
+	// A missing OR unreadable/corrupt state.json is fine for verify: the
+	// read-only drift check recomputes every derived node and compares the
+	// freshly produced bytes against on-disk content, so it never consults the
+	// stored hash baseline. Fall back to an empty (cold) baseline rather than
+	// dereferencing the nil *State that state.Load returns on a parse/read
+	// error — passing nil to runner.Prepare (st.Hashes) panics and crashes the
+	// CI gate on a truncated/corrupt state file (§11.4.6 no silent crash).
+	st, serr := state.Load(statePath)
+	if serr != nil || st == nil {
+		st = state.New()
+	}
 
 	worst := exitOK
 	anyStale := false
