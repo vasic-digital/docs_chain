@@ -19,9 +19,11 @@ import (
 //
 // Transforms are exec scripts (no external tool): mid = "MID:" + src ;
 // leaf = "LEAF:" + mid. We set up on-disk so:
-//   src  = "NEW"
-//   mid  = "MID:OLD"     (stale: real mid would be "MID:NEW")
-//   leaf = "LEAF:MID:OLD" (consistent with the STALE on-disk mid)
+//
+//	src  = "NEW"
+//	mid  = "MID:OLD"     (stale: real mid would be "MID:NEW")
+//	leaf = "LEAF:MID:OLD" (consistent with the STALE on-disk mid)
+//
 // Real sync => mid="MID:NEW", leaf="LEAF:MID:NEW". So leaf IS stale.
 // Correct Verify must report leaf STALE. The bug reports it in-sync.
 func TestVerify_MultiLevelStaleness_NotMasked(t *testing.T) {
@@ -46,8 +48,8 @@ func TestVerify_MultiLevelStaleness_NotMasked(t *testing.T) {
 		}
 	}
 	write("src.txt", "NEW")
-	write("mid.txt", "MID:OLD")        // STALE vs src
-	write("leaf.txt", "LEAF:MID:OLD")  // consistent with the stale on-disk mid
+	write("mid.txt", "MID:OLD")       // STALE vs src
+	write("leaf.txt", "LEAF:MID:OLD") // consistent with the stale on-disk mid
 
 	yaml := `
 context: chain
