@@ -87,9 +87,20 @@ func (a *SQLiteAdapter) open() (*sql.DB, error) {
 //	row := col0 \t col1 \t ... \t colN
 //	dump := row0 \n row1 \n ... \n rowM \n   (one trailing newline if non-empty)
 //
-// NULL columns serialize to the literal token "\x00NULL\x00" so they are
-// distinguishable from an empty string. Because the query carries ORDER BY,
-// the dump is a pure function of the row SET — insert order is irrelevant.
+// NULL columns serialize to the nullSentinel token so they are distinguishable
+// from an empty string. Because the query carries ORDER BY, the dump is a
+// pure function of the row SET — insert order is irrelevant.
+//
+// BUG FIX (dump-collision defect — same class as sqlite_table.go's
+// canonicalDumpAllTables, see dump_collision_red_test.go): a non-NULL cell
+// value is escaped via escapeDumpField before joining so a literal TAB or
+// NEWLINE byte inside a cell cannot forge the field/row boundary this dump
+// format uses as its separator. Without escaping, two DISTINCT row states —
+// e.g. columns ["a\tb", "c"] vs ["a", "b\tc"] — serialize to the IDENTICAL
+// dump bytes ("a\tb\tc\n" either way), so their content hashes COLLIDE and a
+// real DB change goes undetected: `verify` falsely reports in-sync on stale
+// content, `sync` misses the change (§11.4.6 / §11.4.86 change-detection
+// PASS-bluff). See TestSQLiteAdapter_NoCollisionAcrossDistinctRowStates.
 func (a *SQLiteAdapter) Read() ([]byte, error) {
 	db, err := a.open()
 	if err != nil {
@@ -123,9 +134,9 @@ func (a *SQLiteAdapter) Read() ([]byte, error) {
 		fields := make([]string, len(cols))
 		for i, rb := range raw {
 			if rb == nil {
-				fields[i] = "\x00NULL\x00"
+				fields[i] = nullSentinel
 			} else {
-				fields[i] = string(rb)
+				fields[i] = escapeDumpField(string(rb))
 			}
 		}
 		b.WriteString(strings.Join(fields, "\t"))
