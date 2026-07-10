@@ -9,6 +9,7 @@ package hash
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"sort"
 	"strings"
@@ -99,14 +100,27 @@ func (RawByteHasher) Hash(content []byte) string { return sum(content) }
 
 // FingerprintMembers returns a drift-proof sha256 over the SORTED member
 // list (§11.4.86). Order of the input is irrelevant; the fingerprint is a
-// pure function of the SET of members. Each member is newline-joined after
-// sorting so that adding, removing, or renaming a member changes the hash
-// while reordering does not.
+// pure function of the SET of members: adding, removing, or renaming a member
+// changes the hash while reordering does not.
+//
+// Encoding is INJECTIVE via length-prefix framing: each sorted member is fed
+// to the digest as a fixed-width 8-byte big-endian length followed by its raw
+// bytes. A bare separator-join ("\n") is NOT injective — a member that itself
+// contains the separator can shift a record boundary, so distinct member sets
+// collide (e.g. {"a","b\nc"} and {"a\nb","c"} both join to "a\nb\nc"), MISSING a
+// real roster change and shipping a stale export past the drift gate. Newline is
+// a legal path byte on the POSIX targets docs_chain runs on, so no join byte is
+// safe; length-prefix framing closes the collision class for ALL inputs.
 func FingerprintMembers(members []string) string {
 	cp := make([]string, len(members))
 	copy(cp, members)
 	sort.Strings(cp)
-	// Join with a separator that cannot appear inside a member path on the
-	// systems docs_chain targets; "\n" is the canonical record separator.
-	return sum([]byte(strings.Join(cp, "\n")))
+	h := sha256.New()
+	var lenbuf [8]byte
+	for _, m := range cp {
+		binary.BigEndian.PutUint64(lenbuf[:], uint64(len(m)))
+		h.Write(lenbuf[:])
+		h.Write([]byte(m))
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }

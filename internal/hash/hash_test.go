@@ -113,6 +113,37 @@ func TestFingerprintMembers_MembershipSensitive(t *testing.T) {
 	}
 }
 
+// TestFingerprintMembers_SeparatorInjection pins the §11.4.86 drift-proof
+// contract at its core: two DISTINCT member SETS must NEVER share a fingerprint.
+// The pre-fix implementation joins members with "\n" and hashes the join, so a
+// member that itself contains the "\n" record separator collides distinct sets:
+//
+//	{"a", "b\nc"}  -> join "a\nb\nc"
+//	{"a\nb", "c"}  -> join "a\nb\nc"   (SAME hash, DIFFERENT roster)
+//
+// A roster that transitions between these states (e.g. a file literally named
+// "b\nc" replacing files "b" and "c") is MISSED by the drift-proof gate, so a
+// stale Status/roster export passes verify — a §11.4 PASS-bluff at the
+// fingerprint layer. Newline is a legal path byte on the POSIX targets, so the
+// member encoding MUST be injective (length-prefix framing), not a bare join.
+func TestFingerprintMembers_SeparatorInjection(t *testing.T) {
+	a := FingerprintMembers([]string{"a", "b\nc"})
+	b := FingerprintMembers([]string{"a\nb", "c"})
+	if a == b {
+		t.Fatalf("§11.4.86 collision: distinct member sets {\"a\", \"b\\nc\"} and "+
+			"{\"a\\nb\", \"c\"} share fingerprint %q — a roster change is MISSED "+
+			"(separator injection)", a)
+	}
+	// A single member carrying the separator must also stay distinct from the
+	// two-member set whose join reconstructs it.
+	one := FingerprintMembers([]string{"a\nb\nc"})
+	three := FingerprintMembers([]string{"a", "b", "c"})
+	if one == three {
+		t.Fatalf("§11.4.86 collision: single member {\"a\\nb\\nc\"} shares fingerprint "+
+			"%q with three-member set {\"a\",\"b\",\"c\"} — cardinality change MISSED", one)
+	}
+}
+
 func TestFingerprintMembers_Deterministic(t *testing.T) {
 	in := []string{"b", "a", "c"}
 	want := FingerprintMembers(in)
