@@ -245,7 +245,26 @@ func (g *Graph) Recompute(store Store, h Hasher, transforms map[string]Transform
 		if !isDerived {
 			continue // input node; already hashed in step 1
 		}
-		anyDirty := false
+		// BUG FIX (task #80 — sync/verify disagreement, "silent-adoption of
+		// drifted derived artifacts"): candidacy MUST also fire when the
+		// derived node's OWN on-disk content has drifted from ITS OWN stored
+		// baseline (dirty[id], set in Step 1), not only when a SOURCE is
+		// dirty. Without this, a derived artifact overwritten out-of-band (a
+		// foreign export tool, a stale pre-existing file, a manual hand-edit)
+		// while its source is untouched is silently "laundered": Step 1
+		// correctly detects the self-drift, but the pre-fix candidacy check
+		// below skipped it (no dirty source), so its transform never re-ran —
+		// and CommitHashes (called unconditionally, even on the in-sync
+		// fast path) then adopted the drifted on-disk bytes as the new
+		// baseline. From that point `sync` reports "in-sync" forever
+		// (self-consistent with the now-corrupted baseline) while `verify`
+		// — which never consults the baseline and always freshly re-derives
+		// every target from its live sources — permanently reports it
+		// STALE. Recomputing on self-drift restores the invariant every
+		// derive-from target must hold: on-disk content == transform(live
+		// sources), so `sync` and `verify` can never again disagree about
+		// the same state.
+		anyDirty := dirty[id]
 		for _, s := range srcs {
 			if dirty[s] {
 				anyDirty = true
@@ -253,7 +272,7 @@ func (g *Graph) Recompute(store Store, h Hasher, transforms map[string]Transform
 			}
 		}
 		if !anyDirty {
-			continue // no dirty source -> no candidacy (pruned upstream)
+			continue // no dirty source and no self-drift -> no candidacy (pruned upstream)
 		}
 
 		tf, ok := transforms[id]
@@ -277,14 +296,37 @@ func (g *Graph) Recompute(store Store, h Hasher, transforms map[string]Transform
 			return nil, fmt.Errorf("graph: hasher for %q: %w", id, herr)
 		}
 		newHash := nh.Hash(out)
-		if newHash == g.nodes[id].Hash {
-			// Early cutoff: output unchanged. Do NOT mark dirty; downstream
-			// is pruned.
+		// BUG FIX (task #80 — sync/verify disagreement, part 2): the
+		// early-cutoff comparison MUST be against the node's CURRENT
+		// on-disk hash (captured in Step 1, before this iteration mutates
+		// res.NewHashes[id]) — never against the OLD stored baseline
+		// (g.nodes[id].Hash). For a normal source-triggered candidate the
+		// two are identical (id was not itself dirty, so onDiskHash ==
+		// g.nodes[id].Hash by construction), so this is NOT a behaviour
+		// change for the designed case. But for a self-drift candidate (an
+		// out-of-band write left disk != baseline while the source stayed
+		// untouched) the OLD baseline still equals the CORRECT re-derived
+		// content — so comparing against it would wrongly "early-cutoff"
+		// prune the write and leave the foreign bytes on disk forever
+		// (exactly the task #80 defect). Comparing against the live on-disk
+		// hash instead means: if the fresh transform already matches what
+		// is ACTUALLY on disk right now, skip the write (true no-op); if it
+		// does not, write the corrected bytes — healing drift exactly like
+		// a genuine source-driven change.
+		onDiskHash := res.NewHashes[id]
+		if newHash == onDiskHash {
+			// Early cutoff: the artefact already on disk IS this exact
+			// content; no write needed. Not dirty for downstream
+			// propagation purposes — nothing actually changed.
+			dirty[id] = false
 			res.Pruned = append(res.Pruned, id)
 			res.NewHashes[id] = newHash
 			continue
 		}
-		// Output changed: persist, mark dirty, propagate downstream.
+		// On-disk content differs from the fresh transform output — either
+		// a genuine source-driven change, or a drifted/foreign artefact
+		// being healed back to transform(sources). Persist, mark dirty,
+		// propagate downstream.
 		if serr := store.Set(id, out); serr != nil {
 			return nil, fmt.Errorf("graph: store.Set(%q): %w", id, serr)
 		}
