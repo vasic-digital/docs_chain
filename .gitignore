@@ -12,3 +12,9 @@ profile.cov
 
 # Compiled Go binary (build artifact, regeneratable via go build)
 /docs_chain
+
+# Cross-compiled Windows binaries (never produced by this module today, but
+# any consumer building a Windows target for the CLI MUST NOT ever land the
+# resulting .exe here — Task #44 defensive entry, §11.4.30 build-artifact
+# discipline).
+*.exe
