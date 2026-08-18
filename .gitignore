@@ -9,3 +9,6 @@
 *.out
 coverage.*
 profile.cov
+
+# Compiled Go binary (build artifact, regeneratable via go build)
+/docs_chain
